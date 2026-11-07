@@ -1,100 +1,45 @@
 # 📈 TRADING-ANALISIS-FREE-MOBILE
-> **Mobile Quant Technical Analyzer & AI Prompt Generator (Zero AI Token Edition)**
+> **Mobile Quant Technical Analyzer, MTF Charts & AI Prompt Generator (Zero AI Token Edition)**
 
-Aplikasi web mobile ultra-ringan untuk analisis teknikal pasar Forex dan Gold (XAU/USD). Dirancang khusus untuk menghasilkan data struktur harga multi-timeframe terformat dan prompt cerdas siap pakai ke AI browser (ChatGPT, Claude, Gemini) **tanpa memerlukan saldo API / kuota token AI berbayar**.
+Aplikasi web mobile ultra-ringan untuk analisis teknikal pasar Forex dan Gold (XAU/USD). Dirancang khusus untuk menghasilkan data struktur harga multi-timeframe terformat, prompt cerdas siap pakai ke AI browser (ChatGPT, Claude, Gemini) **tanpa memerlukan saldo API / kuota token AI berbayar**, dilengkapi visualisasi chart interaktif dan kalkulator broker profesional.
 
 🔗 **Live Web App:** [ashtersai.github.io/TRADING-ANALISIS-FREE-MOBILE](https://ashtersai.github.io/TRADING-ANALISIS-FREE-MOBILE/)
 
 ---
 
-## ✨ Fitur Unggulan
+## ✨ Fitur & Pembaruan Terbaru
 
-- **Zero AI Token Cost:** Pemrosesan data pasar dilakukan di sisi browser. Hasil dikirim langsung ke AI browser favorit Anda lewat satu kali klik salin (*Copy to Clipboard*).
-- **Multi-Timeframe Structure (MTF):** Menganalisis pasar menggunakan hierarki institusional:
-  - **D1 / H4:** Tren dominan & level Major Support/Resistance.
-  - **H1:** Struktur market (*Swing HH/HL/LH/LL, BOS, CHoCH*).
-  - **M15:** Area *entry*, *breakout/retest*, dan konfirmasi penutupan candle (*completed candle close*).
-- **Twelve Data API Integration:** Menarik harga terkini dan histori pasar secara langsung dan akurat.
-- **Mode Simulasi Offline:** Tetap dapat digunakan untuk latihan dan pengujian prompt tanpa perlu memasukkan API key.
-- **Rule Strict Pending Orders:** Format instruksi mengunci AI agar hanya merekomendasikan *Pending Order* (*BUY STOP, SELL STOP, BUY LIMIT, SELL LIMIT*) dengan rasio **Risk-to-Reward (RR) minimal 1:2**.
-- **Validator Respon AI & Kalkulator RR:** Dilengkapi parser lokal untuk memverifikasi validitas JSON balasan AI dan menghitung kepatuhan rasio RR secara otomatis.
-- **Mobile-First & Private:** Dioptimalkan untuk layar smartphone Android/iOS. API Key disimpan secara lokal di `localStorage` perangkat dan tidak dikirim ke server pihak ketiga mana pun.
+- **🚀 Web AI Launchers:** Pintasan cepat di bilah navigasi untuk membuka ChatGPT, Claude, Gemini, atau Custom Web AI dalam satu ketukan. Dilengkapi modal pengaturan (`⚙`) untuk mengubah dan menyimpan alamat URL web AI secara permanen di browser (`localStorage`).
+- **📊 Visualisasi TradingView Lightweight Charts:** 
+  - **Tab 1 (Validator Chart):** Merender chart candlestick secara dinamis beserta garis horizontal level **Entry (Biru)**, **Take Profit (Hijau)**, **Stop Loss (Merah)**, dan **Level Referensi/Resistance (Kuning)** berdasarkan hasil analisis JSON dari AI.
+  - **Tab 2 (Multi-Timeframe Charts):** Menampilkan 5 grafik interaktif terpisah untuk **D1, H4, H1, M15, dan M5** lengkap dengan indikator EMA 20/50, zona *Supply & Demand*, serta titik penanda struktur *CHoCH*.
+- **💼 Kalkulator Broker & Posisi Aktif Lengkap:**
+  - Menghitung posisi (BUY/SELL), lot, modal, pilihan leverage (`1:100` hingga `1:1000`), dan biaya komisi broker per lot.
+  - Menghitung secara otomatis **Floating P/L Kotor & Bersih (Net)**, **Harga Break-Even Point (BEP)**, **Used Margin**, **Equity**, **Free Margin**, **Margin Level (%)** dengan indikator status keamanan akun, serta jarak ketahanan poin (*Stop Out distance*).
+  - Data posisi dan manajemen risiko langsung diintegrasikan ke dalam teks prompt AI.
+- **📋 Tombol Quick Paste & Clear:** Tombol instan di kotak validator untuk menempelkan (*paste*) teks JSON dari clipboard dan membersihkan layar (*clear*) dengan satu kali klik.
+- **💡 Penjelasan Edukatif & Glosarium AI:** Prompt dikunci agar AI tidak hanya memberikan angka, tetapi juga menjabarkan istilah teknikal (*CHoCH, BOS, Rejection Wick, Retrace*) ke dalam Bahasa Indonesia yang mudah dipahami disertai kamus istilah.
+- **Zero AI Token Cost & Mobile-First:** Pemrosesan data dilakukan di sisi klien. API Key Twelve Data dan konfigurasi tersimpan aman di penyimpanan lokal perangkat Anda.
 
 ---
-## 🚀 Alur Kerja (Workflow)
 
-Berikut adalah tahapan penggunaan aplikasi:
+## 📑 Struktur Navigasi Aplikasi
+
+1. **Tab 1: 📑 GENERATOR PROMPT AI & VALIDATOR**
+   - Menarik data OHLC, menyusun prompt multi-timeframe, menyalin prompt ke clipboard, serta memvalidasi balasan JSON dari AI dan merender chart level order.
+2. **Tab 2: 📈 MARKET ANALYSIS & DATA OHLC**
+   - Menampilkan ringkasan dan 5 grafik visual multi-timeframe (`D1`, `H4`, `H1`, `M15`, `M5`) untuk memverifikasi tren, zona *supply*, dan struktur *CHoCH*.
+3. **Tab 3: 💼 MY POSITION & KALKULATOR BROKER**
+   - Mengelola status posisi terbuka, menghitung margin, leverage, komisi, dan titik impas BEP.
+
+---
+
+## 🚀 Alur Kerja (Workflow)
 
 ```mermaid
 graph LR
     A[Pilih Pair] --> B[Ambil Data Pasar]
     B --> C[Salin Prompt Otomatis]
-    C --> D[Tempel ke ChatGPT / Claude / Gemini]
-    D --> E[Tempel Balasan JSON ke Web]
-    E --> F[Validasi Setup & Kalkulasi RR]
-```
-
-### 📌 Langkah Penggunaan
-
-1. **Pilih Instrumen:** Pilih pair yang ingin dianalisis, misalnya `XAU/USD` atau `EUR/USD`.
-2. **Ambil Data:** Klik tombol **Ambil Data** untuk mengambil harga terkini melalui Twelve Data atau menggunakan Mode Simulasi.
-3. **Salin Prompt:** Klik tombol **📋 SALIN KE CLIPBOARD** untuk menyalin prompt analisis secara otomatis.
-4. **Jalankan di AI:** Buka ChatGPT, Claude, atau Gemini, kemudian tempel prompt menggunakan `Ctrl + V`.
-5. **Validasi Setup:** Salin hasil analisis AI dalam format JSON, kemudian tempel ke kolom **Validasi Balasan AI** pada aplikasi.
-6. **Kalkulasi RR:** Sistem akan memvalidasi setup dan menghitung rasio Risk/Reward secara otomatis.
-
-**Catatan:** Setup dinyatakan valid apabila memenuhi rasio Risk/Reward minimal 1:2.
-
----
-
-## 🛠️ Format Standar JSON Balasan AI
-
-AI akan menghasilkan respons dalam format JSON terstruktur dengan penjelasan berbahasa Indonesia.
-
-### Contoh Respons
-
-```json
-{
-  "instrument": "XAU/USD",
-  "signal": "BUY STOP",
-  "entry": 2745.50,
-  "sl": 2738.00,
-  "tp": 2761.00,
-  "warningLevel": 2742.00,
-  "biasReversalLevel": 2735.00,
-  "status": "VALID SETUP",
-  "reason": "Breakout resistance H1 didukung kelanjutan tren D1 di atas EMA20.",
-  "confirmationCondition": "Candle M15 close di atas level 2745.50 dengan momentum bersih.",
-  "cancellationCondition": "Harga drop dan close kembali di bawah 2738.00 sebelum entry terpicu."
-}
-```
-
-### 📖 Keterangan Field JSON
-
-| Field | Keterangan |
-|---|---|
-| `instrument` | Instrumen trading yang dianalisis. |
-| `signal` | Jenis sinyal trading, seperti BUY STOP, SELL STOP, BUY LIMIT, SELL LIMIT, atau WAIT. |
-| `entry` | Harga rencana masuk posisi. |
-| `sl` | Harga Stop Loss. |
-| `tp` | Harga Take Profit. |
-| `warningLevel` | Level harga untuk peringatan risiko. |
-| `biasReversalLevel` | Level harga yang mengindikasikan perubahan arah bias. |
-| `status` | Status validitas setup trading. |
-| `reason` | Alasan teknikal di balik keputusan AI. |
-| `confirmationCondition` | Kondisi yang harus terpenuhi sebelum entry. |
-| `cancellationCondition` | Kondisi yang membatalkan setup trading. |
-
-**Penting:** Respons AI harus mengikuti struktur JSON tersebut agar dapat dibaca dan divalidasi oleh sistem. Jangan menambahkan teks, komentar, atau Markdown di luar objek JSON saat mengirimkan hasil analisis ke aplikasi.
-⚙️ Pemasangan & Penggunaan Mandiri
-Repositori ini murni menggunakan HTML5, CSS3 murni, dan Vanilla JavaScript tanpa dependencies pihak ketiga (Node.js/npm tidak diperlukan):
-
-Clone repository:
-
-Bash
-git clone [https://github.com/ashtersai/TRADING-ANALISIS-FREE-MOBILE.git](https://github.com/ashtersai/TRADING-ANALISIS-FREE-MOBILE.git)
-Jalankan:
-Cukup klik dua kali berkas index.html untuk membuka di browser apa pun, atau aktifkan GitHub Pages di repositori Anda.
-
-⚠️ Disclaimer
-Aplikasi ini dibuat murni untuk tujuan analisis teknikal, edukasi strategi, dan prompt engineering. Segala keputusan eksekusi order trading di pasar finansial merupakan tanggung jawab penuh masing-masing individu. Selalu terapkan manajemen risiko yang ketat.
+    C --> D[Buka Web AI & Tempel Prompt]
+    D --> E[Salin JSON Balasan AI]
+    E --> F[Paste ke Web & Validasi Chart]
