@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Quant Prompt Engine & AI Visual Chart</title>
   
-  <!-- Library Resmi TradingView Lightweight Charts (Open-Source & Ultra Ringan) -->
+  <!-- Library Resmi TradingView Lightweight Charts (Ultra Ringan) -->
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -436,7 +436,7 @@
     </div>
     <div class="step-box">
       <div class="step-title"><span class="step-badge">3</span> VALIDASI & RENDER CHART</div>
-      <div class="step-desc">Tempel balasan JSON ke validator: sistem memeriksa syarat RR ≥ 1:2 dan langsung memetakan level di chart visual.</div>
+      <div class="step-desc">Tempel balasan JSON: AI menjabarkan istilah teknikal dalam Bahasa Indonesia dan sistem memetakan level di chart visual.</div>
     </div>
   </div>
 
@@ -484,7 +484,7 @@
           <h2 style="font-size: 1rem; color: var(--text-main);">Validator Setup & Visualisasi Level Chart</h2>
         </div>
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          Tempel balasan JSON murni dari ChatGPT / Claude / Gemini untuk memeriksa logika order dan merender garis support, resistance, SL, serta TP ke chart:
+          Tempel balasan JSON murni dari ChatGPT / Claude / Gemini untuk memeriksa logika order, membaca penjelasan teknikal mendalam, dan merender garis level:
         </p>
 
         <textarea id="aiJsonInput" class="code-box" style="min-height: 120px; margin-bottom: 8px;" placeholder='Tempelkan balasan JSON dari AI di sini...
@@ -496,7 +496,8 @@ Contoh:
   "sl": 2732.0,
   "tp": 2755.0,
   "warningLevel": 2748.0,
-  "reason": "..."
+  "reason": "...",
+  "glossary": "..."
 }'></textarea>
 
         <button class="btn btn-dark" style="width: 100%; margin-bottom: 8px;" onclick="validateAiJson()">
@@ -822,7 +823,8 @@ Contoh:
       const utcString = now.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
 
       const promptTemplate = 
-`ROLE: Institutional Technical Forex/Gold Quant Analyst. Lakukan analisis teknikal murni 100% dari struktur OHLC dan indikator di bawah tanpa melibatkan spekulasi fundamental.
+`ROLE: Institutional Technical Forex/Gold Quant Analyst & Trading Mentor. 
+Lakukan analisis teknikal murni 100% dari struktur OHLC dan indikator di bawah tanpa melibatkan spekulasi fundamental.
 
 INSTRUMEN: ${pair}
 HARGA TERAKHIR (CURRENT PRICE): ${price}
@@ -836,11 +838,13 @@ DATA STRUKTUR MULTI-TIMEFRAME:
 - H1: Terbentuk Change of Character (CHoCH) Bullish. Swing Support intraday terdekat: ${(price * 0.993).toFixed(3)}.
 - M15: Terjadi Rejection Wick bawah pada completed candle. Volume konfirmasi meningkat.${incM5 ? `\n- M5: Konsolidasi mikro di area penembusan resistance.` : ''}
 
-ATURAN STRATEGI & RISK MANAGEMENT:
-1. Analisis Multi-Timeframe (Top-Down): D1/H4 (Trend Utama) -> H1 (Struktur BOS/CHoCH) -> M15 (Setup Entry & Konfirmasi Candle Close).
-2. PENDING ORDER ONLY: Hanya boleh merekomendasikan "BUY STOP", "SELL STOP", "BUY LIMIT", "SELL LIMIT", atau "NO TRADE / WAIT FIRST".
-3. Minimal Risk/Reward (RR) adalah 1:2 (RR >= 2.0). Jika tidak memenuhi rasio 1:2 atau timeframe berkonflik, WAJIB keluarkan sinyal "NO TRADE / WAIT FIRST" dengan status "WAIT CONFIRMATION".
-4. Seluruh alasan, kondisi konfirmasi, dan pembatalan setup WAJIB dijawab dalam BAHASA INDONESIA profesional.
+ATURAN STRATEGI & GAYA BAHASA (PENTING):
+1. PENDING ORDER ONLY: Hanya boleh merekomendasikan "BUY STOP", "SELL STOP", "BUY LIMIT", "SELL LIMIT", atau "NO TRADE / WAIT FIRST".
+2. Minimal Risk/Reward (RR) adalah 1:2 (RR >= 2.0). Jika tidak memenuhi rasio 1:2 atau timeframe berkonflik, WAJIB keluarkan sinyal "NO TRADE / WAIT FIRST" dengan status "WAIT CONFIRMATION".
+3. BAHASA INDONESIA EDUKATIF & MENDALAM:
+   - JELASKAN ISTILAH TEKNIKAL: Jika menyebutkan istilah seperti "CHoCH", "BOS", "Retest", "Rejection Wick", "Demand/Supply", WAJIB sertakan artinya secara bahasa awam yang mudah dipahami (contoh: 'CHoCH (Change of Character / sinyal awal pembalikan arah tren)').
+   - Jabarkan alasan secara menyeluruh mengapa level entry, SL, dan TP tersebut dipilih berdasarkan dinamika kekuatan pembeli dan penjual di market.
+   - Buat penjelasannya runtut, detail, dan nyaman dibaca (minimal 2-3 paragraf penjelasan).
 
 FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
 {
@@ -852,9 +856,10 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
   "warningLevel": number atau null,
   "biasReversalLevel": number atau null,
   "status": "VALID SETUP|WAIT CONFIRMATION|INVALID SETUP",
-  "reason": "Penjelasan teknikal ringkas bahasa Indonesia (maks 35 kata)",
-  "confirmationCondition": "Syarat validasi candle close",
-  "cancellationCondition": "Kondisi pembatalan setup order",
+  "reason": "Penjelasan mendalam, lengkap dengan arti istilah teknikal dalam bahasa Indonesia yang mudah dipahami (CHoCH, BOS, Rejection, dll)",
+  "glossary": "Glosarium singkat: rangkuman arti 2-3 istilah teknikal yang dipakai pada analisa ini",
+  "confirmationCondition": "Syarat validasi candle close dijelaskan secara rinci",
+  "cancellationCondition": "Kondisi pembatalan setup order dijelaskan secara rinci",
   "positionAction": "HOLD|CLOSE PARTIALLY|CLOSE ALL|MOVE SL TO BEP|WAIT|null"
 }`;
 
@@ -897,10 +902,24 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         if (data.signal === 'NO TRADE / WAIT FIRST' || !data.entry) {
           resCard.style.display = 'block';
           resCard.innerHTML = `
-            <div style="color:var(--accent); font-weight:800; margin-bottom:4px;">STATUS: ${data.status || 'WAIT CONFIRMATION'}</div>
-            <div><strong>Sinyal:</strong> ${data.signal}</div>
-            <div><strong>Alasan:</strong> ${data.reason || '-'}</div>
-            <div><strong>Syarat Konfirmasi:</strong> ${data.confirmationCondition || '-'}</div>
+            <div style="color:var(--accent); font-weight:800; font-size: 0.95rem; margin-bottom:6px;">
+              STATUS: ${data.status || 'WAIT CONFIRMATION'} (${data.signal})
+            </div>
+            <div style="margin-top:6px; border-top:1px solid #1e293b; padding-top:6px;">
+              <strong style="color:var(--accent);">📖 Analisis & Alasan Logis:</strong>
+              <p style="margin-top:4px; line-height:1.5;">${data.reason || '-'}</p>
+            </div>
+            ${data.glossary ? `
+            <div style="margin-top:8px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--primary); padding: 6px 10px; border-radius: 4px;">
+              <strong style="color:var(--primary);">💡 Kamus Istilah Analisa:</strong>
+              <p style="margin-top:2px; font-size:0.75rem; color:#cbd5e1; line-height:1.4;">${data.glossary}</p>
+            </div>` : ''}
+            <div style="margin-top:8px;">
+              <strong style="color:var(--success);">✅ Syarat Konfirmasi:</strong> ${data.confirmationCondition || '-'}
+            </div>
+            <div style="margin-top:4px;">
+              <strong style="color:var(--danger);">❌ Pembatalan:</strong> ${data.cancellationCondition || '-'}
+            </div>
           `;
           renderSetupChart(data);
           return;
@@ -920,14 +939,28 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
 
         resCard.style.display = 'block';
         resCard.innerHTML = `
-          <div style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:4px;">
+          <div style="font-size:0.95rem; font-weight:800; color:var(--primary); margin-bottom:6px;">
             ${data.signal} @ ${entry}
           </div>
-          <div><strong>Stop Loss:</strong> ${sl} | <strong>Take Profit:</strong> ${tp}</div>
-          <div><strong>Kepatuhan Rasio RR:</strong> ${rrBadge}</div>
-          <div><strong>Alasan:</strong> ${data.reason || '-'}</div>
-          <div><strong>Syarat Validasi:</strong> ${data.confirmationCondition || '-'}</div>
-          <div><strong>Pembatalan:</strong> ${data.cancellationCondition || '-'}</div>
+          <div style="margin-bottom:6px;">
+            <strong>Stop Loss:</strong> ${sl} | <strong>Take Profit:</strong> ${tp} <br>
+            <strong>Kepatuhan Rasio RR:</strong> ${rrBadge}
+          </div>
+          <div style="margin-top:8px; border-top:1px solid #1e293b; padding-top:8px;">
+            <strong style="color:var(--accent);">📖 Analisis & Alasan Logis:</strong>
+            <p style="margin-top:4px; line-height:1.5;">${data.reason || '-'}</p>
+          </div>
+          ${data.glossary ? `
+          <div style="margin-top:8px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--primary); padding: 6px 10px; border-radius: 4px;">
+            <strong style="color:var(--primary);">💡 Kamus Istilah Analisa:</strong>
+            <p style="margin-top:2px; font-size:0.75rem; color:#cbd5e1; line-height:1.4;">${data.glossary}</p>
+          </div>` : ''}
+          <div style="margin-top:8px;">
+            <strong style="color:var(--success);">✅ Syarat Validasi:</strong> ${data.confirmationCondition || '-'}
+          </div>
+          <div style="margin-top:4px;">
+            <strong style="color:var(--danger);">❌ Pembatalan:</strong> ${data.cancellationCondition || '-'}
+          </div>
         `;
 
         renderSetupChart(data);
@@ -1027,7 +1060,6 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       // 4. Deteksi & Gambar Level Warning / Level Referensi S-R (Kuning/Oranye Titik-titik)
       let refLevel = data.warningLevel || data.biasReversalLevel;
       
-      // Jika AI menulis angka level resistance/support di dalam teks alasan/konfirmasi (seperti 161.334)
       if (!refLevel && (data.reason || data.confirmationCondition)) {
         const fullText = (data.reason || '') + ' ' + (data.confirmationCondition || '');
         const match = fullText.match(/(\d{3,5}\.\d{2,4}|\d{1,2}\.\d{4,5})/);
