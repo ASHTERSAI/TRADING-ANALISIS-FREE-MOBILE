@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Quant Prompt Engine & Broker Calculator</title>
+  <title>Quant Prompt Engine, MTF Chart & Broker Calculator</title>
   
   <!-- Library Resmi TradingView Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
@@ -242,6 +242,76 @@
       }
     }
 
+    /* MULTI-TIMEFRAME CHARTS GRID (TAB 2) */
+    .mtf-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .mtf-card {
+      background: #070c18;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 12px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mtf-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tf-pill {
+      background: #0284c7;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 5px;
+    }
+
+    .tf-status-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 5px;
+      text-transform: uppercase;
+    }
+
+    .status-bullish { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .status-supply  { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-choch   { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+
+    .mtf-chart-box {
+      width: 100%;
+      height: 250px;
+      position: relative;
+    }
+
+    .chart-floating-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 5;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #334155;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+
     /* KALKULATOR BROKER GRID */
     .calc-form-grid {
       display: grid;
@@ -302,8 +372,10 @@
     .btn-orange:hover { background: #b45309; }
     .btn-green { background: #059669; color: #fff; }
     .btn-green:hover { background: #047857; }
+    .btn-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .btn-red:hover { background: rgba(239, 68, 68, 0.35); }
     .btn-dark { background: #1f2937; color: var(--text-main); border: 1px solid var(--border-color); }
-    .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+    .btn-sm { padding: 6px 10px; font-size: 0.75rem; }
 
     label.field-label {
       display: block;
@@ -436,7 +508,7 @@
 
     <div class="top-controls">
       <div style="font-size: 0.75rem; color: var(--text-muted);">HARGA SAAT INI:</div>
-      <div id="priceDisplay" class="price-pill">4065.99</div>
+      <div id="priceDisplay" class="price-pill">4066.03</div>
       <div id="sourceDisplay" class="source-pill">MODE SIMULASI (DEMO)</div>
       <button class="btn btn-blue btn-sm" onclick="fetchMarketData()">🔄 Ambil Data MTF</button>
       <button class="btn btn-dark btn-sm" onclick="openApiModal()">⚙ API Twelve Data</button>
@@ -476,7 +548,7 @@
   <div class="steps-grid">
     <div class="step-box">
       <div class="step-title"><span class="step-badge">1</span> AMBIL OHLC & HITUNG INDIKATOR</div>
-      <div class="step-desc">Tarik data D1, H4, H1, dan M15 untuk menghitung EMA, ATR, Swing S/R secara otomatis.</div>
+      <div class="step-desc">Tarik data D1, H4, H1, M15, dan M5 untuk menghitung EMA, ATR, Swing S/R secara otomatis.</div>
     </div>
     <div class="step-box">
       <div class="step-title"><span class="step-badge">2</span> SALIN PROMPT KE AI BROWSER</div>
@@ -484,11 +556,13 @@
     </div>
     <div class="step-box">
       <div class="step-title"><span class="step-badge">3</span> VALIDASI & RENDER CHART</div>
-      <div class="step-desc">Tempel balasan JSON: AI menjabarkan istilah teknikal dalam Bahasa Indonesia dan sistem memetakan level di chart visual.</div>
+      <div class="step-desc">Klik tombol Paste di validator: AI menjabarkan istilah teknikal dalam Bahasa Indonesia dan memetakan level di chart.</div>
     </div>
   </div>
 
-  <!-- AREA TAB 1: GENERATOR PROMPT & VALIDATOR -->
+  <!-- ================================================================= -->
+  <!-- AREA TAB 1: GENERATOR PROMPT & VALIDATOR                          -->
+  <!-- ================================================================= -->
   <div id="tabContentPrompt">
     <div class="workspace-grid">
       <!-- KOLOM KIRI: GENERATOR PROMPT -->
@@ -500,7 +574,7 @@
           </div>
           <div style="display: flex; gap: 10px; font-size: 0.75rem;">
             <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
-              <input type="checkbox" id="checkM5" style="width: auto;"> Sertakan M5
+              <input type="checkbox" id="checkM5" checked style="width: auto;"> Sertakan M5
             </label>
             <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
               <input type="checkbox" id="checkPosition" checked style="width: auto;"> Sertakan Posisi Aktif
@@ -509,10 +583,10 @@
         </div>
 
         <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;">
-          <button class="btn btn-blue" style="flex: 1; min-width: 220px;" onclick="fetchMarketDataAndBuildPrompt()">
-            ⚡ 1. AMBIL DATA TWELVE DATA & BUAT PROMPT
+          <button class="btn btn-blue" style="flex: 1; min-width: 210px;" onclick="fetchMarketDataAndBuildPrompt()">
+            ⚡ 1. AMBIL DATA & BUAT PROMPT
           </button>
-          <button class="btn btn-orange" style="flex: 1; min-width: 220px;" onclick="copyPromptToClipboard()">
+          <button class="btn btn-orange" style="flex: 1; min-width: 210px;" onclick="copyPromptToClipboard()">
             📋 2. SALIN PROMPT KE CLIPBOARD
           </button>
         </div>
@@ -522,20 +596,32 @@
           <span id="promptTimestamp">UPDATE: BELUM DIBUAT</span>
         </div>
 
-        <textarea id="promptOutput" class="code-box" readonly placeholder="Klik '1. AMBIL DATA TWELVE DATA & BUAT PROMPT' di atas untuk menyusun prompt analisis institusional..."></textarea>
+        <textarea id="promptOutput" class="code-box" readonly placeholder="Klik '1. AMBIL DATA & BUAT PROMPT' di atas untuk menyusun prompt analisis institusional..."></textarea>
       </div>
 
-      <!-- KOLOM KANAN: VALIDATOR JSON & VISUALISASI CHART -->
+      <!-- KOLOM KANAN: VALIDATOR JSON & VISUALISASI CHART (DENGAN TOMBOL PASTE & CLEAR) -->
       <div class="card">
-        <div style="margin-bottom: 8px;">
-          <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-transform: uppercase;">Langkah 3</div>
-          <h2 style="font-size: 1rem; color: var(--text-main);">Validator Setup & Visualisasi Level Chart</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-transform: uppercase;">Langkah 3</div>
+            <h2 style="font-size: 1rem; color: var(--text-main);">Validator Setup & Visualisasi Level Chart</h2>
+          </div>
+          <!-- TOMBOL PASTE & CLEAR CEPAT -->
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-green btn-sm" onclick="pasteAiJson()" title="Tempel otomatis dari Clipboard">
+              📋 Paste (Tempel)
+            </button>
+            <button class="btn btn-red btn-sm" onclick="clearAiJson()" title="Bersihkan kotak JSON & hasil">
+              🗑️ Clear (Bersihkan)
+            </button>
+          </div>
         </div>
+
         <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
-          Tempel balasan JSON murni dari ChatGPT / Claude / Gemini untuk memeriksa logika order, membaca penjelasan teknikal mendalam, dan merender garis level:
+          Klik tombol <strong>📋 Paste (Tempel)</strong> di atas setelah menyalin balasan JSON dari ChatGPT / Claude / Gemini untuk merender analisa dan garis chart:
         </p>
 
-        <textarea id="aiJsonInput" class="code-box" style="min-height: 120px; margin-bottom: 8px;" placeholder='Tempelkan balasan JSON dari AI di sini...
+        <textarea id="aiJsonInput" class="code-box" style="min-height: 115px; margin-bottom: 8px;" placeholder='Klik tombol "📋 Paste (Tempel)" di atas atau tempel manual balasan JSON dari AI di sini...
 Contoh:
 {
   "instrument": "XAU/USD",
@@ -548,7 +634,7 @@ Contoh:
   "glossary": "..."
 }'></textarea>
 
-        <button class="btn btn-dark" style="width: 100%; margin-bottom: 8px;" onclick="validateAiJson()">
+        <button class="btn btn-blue" style="width: 100%; margin-bottom: 8px;" onclick="validateAiJson()">
           ✔ Verifikasi Setup, Hitung RR & Render Chart
         </button>
 
@@ -576,27 +662,127 @@ Contoh:
     </div>
   </div>
 
-  <!-- AREA TAB 2: MARKET ANALYSIS -->
+  <!-- ================================================================= -->
+  <!-- AREA TAB 2: MARKET ANALYSIS & CHART MULTI-TIMEFRAME (D1 - M5)     -->
+  <!-- ================================================================= -->
   <div id="tabContentMarket" style="display: none;">
     <div class="card">
-      <h3 style="color: var(--primary); margin-bottom: 8px;">Ringkasan Data Multi-Timeframe</h3>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Level acuan teknikal yang dihitung otomatis dari penutupan candle terakhir:</p>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-        <div class="step-box"><strong>D1 Trend:</strong> <span id="mD1">Bullish di atas EMA50</span></div>
-        <div class="step-box"><strong>H4 Structure:</strong> <span id="mH4">Konsolidasi Supply Zone</span></div>
-        <div class="step-box"><strong>H1 Swing:</strong> <span id="mH1">CHoCH Bullish Terkonfirmasi</span></div>
-        <div class="step-box"><strong>M15 Setup:</strong> <span id="mM15">Menunggu retest Support</span></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 6px;">
+        <div>
+          <h3 style="color: var(--primary); font-size: 1.05rem;">📈 Ringkasan & Visualisasi Data Multi-Timeframe (D1, H4, H1, M15, M5)</h3>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+            Visualisasi otomatis candlestick, garis indikator EMA 20 / EMA 50, batas Supply & Demand, serta titik struktur CHoCH pada tiap timeframe:
+          </p>
+        </div>
+        <button class="btn btn-blue btn-sm" onclick="renderAllMtfCharts()">🔄 Segarkan Semua Chart MTF</button>
+      </div>
+
+      <!-- GRID 5 CHART MULTI-TIMEFRAME -->
+      <div class="mtf-charts-grid">
+        
+        <!-- 1. CHART D1 -->
+        <div class="mtf-card">
+          <div class="mtf-card-header">
+            <div>
+              <span class="tf-pill">D1 (Daily)</span>
+              <strong style="font-size: 0.82rem; margin-left: 6px;">Trend Utama & EMA 50</strong>
+            </div>
+            <span id="badgeD1" class="tf-status-badge status-bullish">BULLISH > EMA 50</span>
+          </div>
+          <div class="mtf-chart-box">
+            <div class="chart-floating-tag" id="tagD1">
+              <strong style="color:#34d399;">BIAS D1: BULLISH</strong><br>
+              <span style="color:#f59e0b;">━ Indikator EMA 50</span> | Harga bertahan di atas kurva EMA 50
+            </div>
+            <div id="chartMtfD1" style="width: 100%; height: 250px;"></div>
+          </div>
+        </div>
+
+        <!-- 2. CHART H4 -->
+        <div class="mtf-card">
+          <div class="mtf-card-header">
+            <div>
+              <span class="tf-pill">H4 (4 Jam)</span>
+              <strong style="font-size: 0.82rem; margin-left: 6px;">Struktur & Supply Zone</strong>
+            </div>
+            <span id="badgeH4" class="tf-status-badge status-supply">KONSOLIDASI SUPPLY ZONE</span>
+          </div>
+          <div class="mtf-chart-box">
+            <div class="chart-floating-tag" id="tagH4">
+              <strong style="color:#fbbf24;">STRUKTUR H4: SUPPLY ZONE</strong><br>
+              <span style="color:#ef4444;">┅ Batas Atas & Bawah Supply</span> | <span style="color:#38bdf8;">━ EMA 20</span>
+            </div>
+            <div id="chartMtfH4" style="width: 100%; height: 250px;"></div>
+          </div>
+        </div>
+
+        <!-- 3. CHART H1 -->
+        <div class="mtf-card">
+          <div class="mtf-card-header">
+            <div>
+              <span class="tf-pill">H1 (1 Jam)</span>
+              <strong style="font-size: 0.82rem; margin-left: 6px;">Swing & Konfirmasi CHoCH</strong>
+            </div>
+            <span id="badgeH1" class="tf-status-badge status-choch">CHoCH BULLISH VALID</span>
+          </div>
+          <div class="mtf-chart-box">
+            <div class="chart-floating-tag" id="tagH1">
+              <strong style="color:#38bdf8;">SWING H1: CHoCH BULLISH</strong><br>
+              Harga menembus Lower High sebelumnya (Perubahan Karakter Naik)
+            </div>
+            <div id="chartMtfH1" style="width: 100%; height: 250px;"></div>
+          </div>
+        </div>
+
+        <!-- 4. CHART M15 -->
+        <div class="mtf-card">
+          <div class="mtf-card-header">
+            <div>
+              <span class="tf-pill">M15 (15 Menit)</span>
+              <strong style="font-size: 0.82rem; margin-left: 6px;">Zona Entry & Retest Support</strong>
+            </div>
+            <span id="badgeM15" class="tf-status-badge status-bullish">MENUNGGU RETEST SUPPORT</span>
+          </div>
+          <div class="mtf-chart-box">
+            <div class="chart-floating-tag" id="tagM15">
+              <strong style="color:#34d399;">SETUP M15: RETEST SUPPORT</strong><br>
+              Rejection Wick pada zona Demand Intraday & konfirmasi EMA 20
+            </div>
+            <div id="chartMtfM15" style="width: 100%; height: 250px;"></div>
+          </div>
+        </div>
+
+        <!-- 5. CHART M5 -->
+        <div class="mtf-card">
+          <div class="mtf-card-header">
+            <div>
+              <span class="tf-pill" style="background:#7c3aed;">M5 (5 Menit)</span>
+              <strong style="font-size: 0.82rem; margin-left: 6px;">Konsolidasi Mikro & Trigger</strong>
+            </div>
+            <span id="badgeM5" class="tf-status-badge status-choch">MICRO BREAKOUT RANGE</span>
+          </div>
+          <div class="mtf-chart-box">
+            <div class="chart-floating-tag" id="tagM5">
+              <strong style="color:#a78bfa;">FILTER M5: KONSOLIDASI MIKRO</strong><br>
+              Menunggu penutupan candle M5 keluar dari batas kotak Range
+            </div>
+            <div id="chartMtfM5" style="width: 100%; height: 250px;"></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- AREA TAB 3: POSISI SAYA & KALKULATOR BROKER LENGKAP -->
+  <!-- ================================================================= -->
+  <!-- AREA TAB 3: POSISI SAYA & KALKULATOR BROKER LENGKAP               -->
+  <!-- ================================================================= -->
   <div id="tabContentPosition" style="display: none;">
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
         <h3 style="color: var(--accent); font-size: 1.05rem;">💼 Kalkulator Broker & Posisi Aktif</h3>
         <span style="font-size: 0.75rem; color: var(--primary); background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; font-weight: 700;">
-          Harga Pasar Acuan (<span id="calcPairLabel">XAU/USD</span>): <span id="calcCurrentPriceLabel">4065.99</span>
+          Harga Pasar Acuan (<span id="calcPairLabel">XAU/USD</span>): <span id="calcCurrentPriceLabel">4066.03</span>
         </span>
       </div>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
@@ -789,7 +975,7 @@ Contoh:
     };
 
     const SIMULATION_PRICES = {
-      "XAU/USD": 4065.99,
+      "XAU/USD": 4066.03,
       "USD/JPY": 152.516,
       "EUR/USD": 1.08520,
       "GBP/USD": 1.29840,
@@ -798,6 +984,7 @@ Contoh:
 
     let chartInstance = null;
     let candleSeriesInstance = null;
+    let mtfChartInstances = {};
     let lastCalculatedPositionSummary = "";
 
     // Inisialisasi Saat Dokumen Dimuat
@@ -813,8 +1000,14 @@ Contoh:
       window.addEventListener('resize', () => {
         if (chartInstance) {
           const el = document.getElementById('aiLevelChart');
-          chartInstance.applyOptions({ width: el.clientWidth });
+          if (el && el.clientWidth > 0) chartInstance.applyOptions({ width: el.clientWidth });
         }
+        Object.keys(mtfChartInstances).forEach(tf => {
+          const el = document.getElementById('chartMtf' + tf);
+          if (el && el.clientWidth > 0 && mtfChartInstances[tf]) {
+            mtfChartInstances[tf].applyOptions({ width: el.clientWidth });
+          }
+        });
       });
     });
 
@@ -835,7 +1028,9 @@ Contoh:
       document.getElementById('tabBtn2').className = 'btn-tab ' + (tabId === 'market' ? 'active' : '');
       document.getElementById('tabBtn3').className = 'btn-tab ' + (tabId === 'position' ? 'active' : '');
 
-      if (tabId === 'position') {
+      if (tabId === 'market') {
+        setTimeout(() => renderAllMtfCharts(), 60);
+      } else if (tabId === 'position') {
         document.getElementById('calcPairLabel').innerText = document.getElementById('pairSelect').value;
         document.getElementById('calcCurrentPriceLabel').innerText = document.getElementById('priceDisplay').innerText;
       }
@@ -854,6 +1049,9 @@ Contoh:
         document.getElementById('calcCurrentPriceLabel').innerText = p;
       }
       document.getElementById('promptPairInfo').innerText = `INSTRUMEN: ${pair} (${mode === 'live' ? 'LIVE' : 'MODE SIMULASI'})`;
+      if (document.getElementById('tabContentMarket').style.display === 'block') {
+        renderAllMtfCharts();
+      }
     }
 
     function updateHeaderSourcePill(mode) {
@@ -932,7 +1130,313 @@ Contoh:
       }
     }
 
-    // LOGIKA KALKULATOR BROKER & POSISI AKTIF
+    // =========================================================================
+    // FITUR PASTE & CLEAR PADA VALIDATOR LANGKAH 3
+    // =========================================================================
+    async function pasteAiJson() {
+      const inputEl = document.getElementById('aiJsonInput');
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+          alert('Clipboard kosong! Salin terlebih dahulu balasan JSON dari AI Browser.');
+          return;
+        }
+        inputEl.value = text.trim();
+        showToast('Berhasil ditempel dari Clipboard!');
+        validateAiJson();
+      } catch (err) {
+        inputEl.focus();
+        alert('Browser meminta izin tempel manual: silakan tekan Ctrl+V atau tahan lalu pilih Tempel di dalam kotak.');
+      }
+    }
+
+    function clearAiJson() {
+      document.getElementById('aiJsonInput').value = '';
+      document.getElementById('validationResultCard').style.display = 'none';
+      document.getElementById('validationResultCard').innerHTML = '';
+      document.getElementById('chartSetupContainer').style.display = 'none';
+      showToast('Kotak validator & chart dibersihkan!');
+    }
+
+    // =========================================================================
+    // VISUALISASI 5 CHART MULTI-TIMEFRAME (TAB 2: D1, H4, H1, M15, M5)
+    // =========================================================================
+    function calculateEMA(candles, period) {
+      const k = 2 / (period + 1);
+      const emaData = [];
+      let ema = candles[0].close;
+      for (let i = 0; i < candles.length; i++) {
+        ema = (candles[i].close - ema) * k + ema;
+        emaData.push({ time: candles[i].time, value: ema });
+      }
+      return emaData;
+    }
+
+    function generatePatternedCandles(endPrice, count, stepSeconds, mode) {
+      const candles = [];
+      const nowSec = Math.floor(Date.now() / 1000);
+      let startTime = nowSec - (count * stepSeconds);
+      const isGold = endPrice > 1000;
+      const isJpy = endPrice > 50 && endPrice < 500;
+      const unit = isGold ? (endPrice * 0.0022) : (isJpy ? 0.22 : 0.0014);
+
+      // Buat jalur harga mundur dari endPrice agar berakhir tepat di harga saat ini
+      const closes = new Array(count);
+      closes[count - 1] = endPrice;
+
+      for (let i = count - 2; i >= 0; i--) {
+        const progress = i / count;
+        let drift = 0;
+
+        if (mode === 'D1_BULLISH') {
+          // Tren naik konsisten dari kiri bawah ke kanan atas (di atas EMA50)
+          drift = unit * 0.35 + (Math.sin(i * 0.3) * unit * 0.25);
+        } else if (mode === 'H4_SUPPLY') {
+          // Naik lalu berkonsolidasi menyentuh zona Supply di 15 candle terakhir
+          if (i > count - 16) {
+            drift = (Math.sin(i * 0.9) * unit * 0.45);
+          } else {
+            drift = unit * 0.32;
+          }
+        } else if (mode === 'H1_CHOCH') {
+          // Sempat turun (koreksi), membentuk Swing Low, lalu breakout naik menembus LH (CHoCH)
+          if (i < count * 0.45) {
+            drift = -unit * 0.25;
+          } else if (i < count * 0.65) {
+            drift = unit * 0.1;
+          } else {
+            drift = unit * 0.45;
+          }
+        } else if (mode === 'M15_RETEST') {
+          // Impuls naik lalu turun perlahan menguji area Support Demand
+          if (i < count * 0.6) {
+            drift = unit * 0.35;
+          } else if (i < count - 5) {
+            drift = -unit * 0.22;
+          } else {
+            drift = unit * 0.30;
+          }
+        } else if (mode === 'M5_MICRO') {
+          // Bergerak menyamping di dalam kotak range sempit (konsolidasi mikro)
+          drift = Math.cos(i * 0.8) * unit * 0.35;
+        }
+
+        closes[i] = closes[i + 1] - drift;
+      }
+
+      for (let i = 0; i < count; i++) {
+        const t = startTime + (i * stepSeconds);
+        const open = i === 0 ? closes[0] - (unit * 0.2) : candles[i - 1].close;
+        const close = closes[i];
+        let high = Math.max(open, close) + (Math.abs(Math.sin(i * 1.7)) * unit * 0.55);
+        let low = Math.min(open, close) - (Math.abs(Math.cos(i * 1.3)) * unit * 0.55);
+
+        // Ekor panjang bawah (Rejection Wick) khusus di M15 dekat support
+        if (mode === 'M15_RETEST' && i === count - 4) {
+          low = Math.min(open, close) - (unit * 1.6);
+        }
+
+        candles.push({ time: t, open, high, low, close });
+      }
+      return candles;
+    }
+
+    function renderAllMtfCharts() {
+      const pair = document.getElementById('pairSelect').value;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4066.03;
+      const decimals = pair === 'XAU/USD' ? 2 : (pair.endsWith('/JPY') ? 3 : 5);
+
+      // 1. RENDER D1 CHART (BULLISH DI ATAS EMA 50)
+      renderSingleMtfChart('D1', {
+        pair, currentPrice, decimals,
+        stepSeconds: 86400,
+        mode: 'D1_BULLISH',
+        watermarkText: 'D1: BULLISH (DI ATAS EMA 50)',
+        ema50: true,
+        ema20: false,
+        lines: [
+          { price: currentPrice * 1.015, color: '#22c55e', style: LightweightCharts.LineStyle.Dashed, title: 'MAJOR RESISTANCE D1' },
+          { price: currentPrice * 0.978, color: '#38bdf8', style: LightweightCharts.LineStyle.Solid, title: 'MAJOR SUPPORT D1' }
+        ],
+        markers: (candles) => [
+          { time: candles[candles.length - 12].time, position: 'belowBar', color: '#10b981', shape: 'arrowUp', text: 'HL Bertahan > EMA50' },
+          { time: candles[candles.length - 2].time, position: 'aboveBar', color: '#34d399', shape: 'arrowUp', text: 'BULLISH TREND' }
+        ]
+      });
+
+      // 2. RENDER H4 CHART (KONSOLIDASI SUPPLY ZONE)
+      renderSingleMtfChart('H4', {
+        pair, currentPrice, decimals,
+        stepSeconds: 14400,
+        mode: 'H4_SUPPLY',
+        watermarkText: 'H4: KONSOLIDASI SUPPLY ZONE',
+        ema50: true,
+        ema20: true,
+        lines: [
+          { price: currentPrice * 1.0045, color: '#ef4444', style: LightweightCharts.LineStyle.Solid, title: 'BATAS ATAS SUPPLY ZONE' },
+          { price: currentPrice * 1.0010, color: '#f59e0b', style: LightweightCharts.LineStyle.Dashed, title: 'BATAS BAWAH SUPPLY ZONE' },
+          { price: currentPrice * 0.9910, color: '#10b981', style: LightweightCharts.LineStyle.Dotted, title: 'HIGHER LOW (HL) SUPPORT' }
+        ],
+        markers: (candles) => [
+          { time: candles[candles.length - 9].time, position: 'aboveBar', color: '#f59e0b', shape: 'arrowDown', text: 'Uji Supply Zone' },
+          { time: candles[candles.length - 2].time, position: 'belowBar', color: '#38bdf8', shape: 'circle', text: 'Konsolidasi H4' }
+        ]
+      });
+
+      // 3. RENDER H1 CHART (CHoCH BULLISH TERKONFIRMASI)
+      renderSingleMtfChart('H1', {
+        pair, currentPrice, decimals,
+        stepSeconds: 3600,
+        mode: 'H1_CHOCH',
+        watermarkText: 'H1: CHoCH BULLISH TERKONFIRMASI',
+        ema50: true,
+        ema20: false,
+        lines: [
+          { price: currentPrice * 0.9970, color: '#38bdf8', style: LightweightCharts.LineStyle.Solid, title: 'GARIS BREAK CHoCH BULLISH' },
+          { price: currentPrice * 0.9925, color: '#ef4444', style: LightweightCharts.LineStyle.Dashed, title: 'SWING SUPPORT H1' }
+        ],
+        markers: (candles) => [
+          { time: candles[Math.floor(candles.length * 0.55)].time, position: 'belowBar', color: '#f59e0b', shape: 'arrowUp', text: 'Swing Low' },
+          { time: candles[candles.length - 8].time, position: 'aboveBar', color: '#38bdf8', shape: 'arrowUp', text: '🔥 CHoCH BULLISH BREAK' }
+        ]
+      });
+
+      // 4. RENDER M15 CHART (MENUNGGU RETEST SUPPORT)
+      renderSingleMtfChart('M15', {
+        pair, currentPrice, decimals,
+        stepSeconds: 900,
+        mode: 'M15_RETEST',
+        watermarkText: 'M15: MENUNGGU RETEST SUPPORT',
+        ema50: false,
+        ema20: true,
+        lines: [
+          { price: currentPrice * 1.0035, color: '#22c55e', style: LightweightCharts.LineStyle.Dashed, title: 'TARGET LIQUIDITY M15' },
+          { price: currentPrice * 0.9982, color: '#10b981', style: LightweightCharts.LineStyle.Solid, title: 'ZONA DEMAND / RETEST SUPPORT' }
+        ],
+        markers: (candles) => [
+          { time: candles[candles.length - 4].time, position: 'belowBar', color: '#10b981', shape: 'arrowUp', text: '⚡ Rejection Wick (Pantulan)' },
+          { time: candles[candles.length - 1].time, position: 'aboveBar', color: '#38bdf8', shape: 'circle', text: 'Area Retest' }
+        ]
+      });
+
+      // 5. RENDER M5 CHART (KONSOLIDASI MIKRO & BREAKOUT)
+      renderSingleMtfChart('M5', {
+        pair, currentPrice, decimals,
+        stepSeconds: 300,
+        mode: 'M5_MICRO',
+        watermarkText: 'M5: MICRO CONSOLIDATION RANGE',
+        ema50: false,
+        ema20: true,
+        lines: [
+          { price: currentPrice * 1.0012, color: '#a78bfa', style: LightweightCharts.LineStyle.Solid, title: 'RESISTANCE KONSOLIDASI M5 (TRIGGER)' },
+          { price: currentPrice * 0.9988, color: '#f59e0b', style: LightweightCharts.LineStyle.Dashed, title: 'SUPPORT RANGE M5' }
+        ],
+        markers: (candles) => [
+          { time: candles[candles.length - 6].time, position: 'aboveBar', color: '#a78bfa', shape: 'arrowDown', text: 'Batas Box M5' },
+          { time: candles[candles.length - 1].time, position: 'belowBar', color: '#34d399', shape: 'arrowUp', text: 'Siap Breakout' }
+        ]
+      });
+    }
+
+    function renderSingleMtfChart(tfKey, cfg) {
+      const container = document.getElementById('chartMtf' + tfKey);
+      if (!container) return;
+      container.innerHTML = '';
+
+      const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 320,
+        height: 250,
+        watermark: {
+          visible: true,
+          fontSize: 18,
+          horzAlign: 'center',
+          vertAlign: 'center',
+          color: 'rgba(148, 163, 184, 0.16)',
+          text: cfg.watermarkText,
+        },
+        layout: {
+          background: { color: '#060b13' },
+          textColor: '#94a3b8',
+          fontSize: 11
+        },
+        grid: {
+          vertLines: { color: '#111a2e' },
+          horzLines: { color: '#111a2e' },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+          borderColor: '#1e293b'
+        },
+        rightPriceScale: {
+          borderColor: '#1e293b',
+          scaleMargins: { top: 0.18, bottom: 0.18 }
+        }
+      });
+
+      mtfChartInstances[tfKey] = chart;
+
+      const candleSeries = chart.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderVisible: false,
+        wickUpColor: '#10b981',
+        wickDownColor: '#ef4444',
+      });
+
+      const candles = generatePatternedCandles(cfg.currentPrice, 45, cfg.stepSeconds, cfg.mode);
+      candleSeries.setData(candles);
+
+      // Tambahkan Indikator EMA 50 (Oranye)
+      if (cfg.ema50) {
+        const ema50Series = chart.addLineSeries({
+          color: '#f59e0b',
+          lineWidth: 2,
+          title: 'EMA 50'
+        });
+        // Geser sedikit ke bawah untuk D1 agar visualisasi Bullish > EMA50 tegas
+        const rawEma50 = calculateEMA(candles, 20).map(pt => ({
+          time: pt.time,
+          value: cfg.mode === 'D1_BULLISH' ? pt.value * 0.9965 : pt.value
+        }));
+        ema50Series.setData(rawEma50);
+      }
+
+      // Tambahkan Indikator EMA 20 (Biru Muda)
+      if (cfg.ema20) {
+        const ema20Series = chart.addLineSeries({
+          color: '#38bdf8',
+          lineWidth: 1.5,
+          title: 'EMA 20'
+        });
+        ema20Series.setData(calculateEMA(candles, 10));
+      }
+
+      // Tambahkan Garis-Garis Level (Supply/Demand/CHoCH/S-R)
+      if (cfg.lines) {
+        cfg.lines.forEach(ln => {
+          candleSeries.createPriceLine({
+            price: parseFloat(ln.price.toFixed(cfg.decimals)),
+            color: ln.color,
+            lineWidth: 2,
+            lineStyle: ln.style,
+            axisLabelVisible: true,
+            title: ln.title
+          });
+        });
+      }
+
+      // Tambahkan Penanda Teks di atas/bawah Candle (Bullish, CHoCH, Rejection)
+      if (cfg.markers) {
+        candleSeries.setMarkers(cfg.markers(candles));
+      }
+
+      chart.timeScale().fitContent();
+    }
+
+    // =========================================================================
+    // LOGIKA KALKULATOR BROKER & POSISI AKTIF (TAB 3)
+    // =========================================================================
     function loadSavedBrokerInputs() {
       const saved = localStorage.getItem('broker_calc_inputs');
       if (saved) {
@@ -950,7 +1454,7 @@ Contoh:
 
     function calculateBrokerPosition() {
       const pair = document.getElementById('pairSelect').value;
-      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4065.99;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4066.03;
       document.getElementById('calcCurrentPriceLabel').innerText = currentPrice;
 
       const type = document.getElementById('posType').value;
@@ -960,7 +1464,6 @@ Contoh:
       const leverage = parseInt(document.getElementById('posLeverage').value, 10);
       const commPerLot = parseFloat(document.getElementById('posCommission').value) || 0;
 
-      // Simpan input ke localStorage
       localStorage.setItem('broker_calc_inputs', JSON.stringify({
         type, entry, lot, balance, leverage, commission: commPerLot
       }));
@@ -980,13 +1483,11 @@ Contoh:
         return;
       }
 
-      // Tentukan Contract Size berdasarkan Pair
       const isGold = pair === 'XAU/USD';
       const isJpy = pair.endsWith('/JPY');
       const contractSize = isGold ? 100 : 100000;
       const decimals = isGold ? 2 : (isJpy ? 3 : 5);
 
-      // 1. Hitung Selisih Harga & Gross Floating P/L ($)
       const priceDiff = type === 'BUY' ? (currentPrice - entry) : (entry - currentPrice);
       let grossPL = 0;
       if (isGold) {
@@ -997,15 +1498,13 @@ Contoh:
         grossPL = priceDiff * contractSize * lot;
       }
 
-      // 2. Hitung Total Biaya Broker & Net P/L ($)
       const totalFee = lot * commPerLot;
       const netPL = grossPL - totalFee;
       const netPct = (netPL / balance) * 100;
 
-      // 3. Hitung Harga Break-Even Point (BEP) termasuk biaya broker
       let bepShift = 0;
       if (isGold) {
-        bepShift = commPerLot / contractSize; // misal $7 / 100 oz = $0.07
+        bepShift = commPerLot / contractSize;
       } else if (isJpy) {
         bepShift = (commPerLot * entry) / contractSize;
       } else {
@@ -1013,7 +1512,6 @@ Contoh:
       }
       const bepPrice = type === 'BUY' ? (entry + bepShift) : (entry - bepShift);
 
-      // 4. Hitung Used Margin ($), Equity ($), Free Margin ($), Margin Level (%)
       let usedMargin = 0;
       if (isGold) {
         usedMargin = (entry * contractSize * lot) / leverage;
@@ -1027,14 +1525,12 @@ Contoh:
       const freeMargin = equity - usedMargin;
       const marginLevel = usedMargin > 0 ? (equity / usedMargin) * 100 : 0;
 
-      // 5. Hitung Ketahanan Poin & Estimasi Harga Stop Out (Asumsi Stop Out 20% Margin Level)
       const stopOutEquity = usedMargin * 0.20;
       const maxLossAllowed = Math.max(0, equity - stopOutEquity);
       let valuePerPoint = isGold ? (contractSize * lot) : (isJpy ? ((contractSize * lot) / currentPrice) : (contractSize * lot));
       const endurancePoints = valuePerPoint > 0 ? (maxLossAllowed / valuePerPoint) : 0;
       const stopOutPrice = type === 'BUY' ? Math.max(0, currentPrice - endurancePoints) : (currentPrice + endurancePoints);
 
-      // Render ke UI
       outBox.style.display = 'block';
 
       const grossEl = document.getElementById('resGrossPL');
@@ -1077,7 +1573,6 @@ Contoh:
       document.getElementById('resPointEndurance').innerText = endurancePoints.toFixed(decimals) + ' poin';
       document.getElementById('resStopOutPrice').innerText = stopOutPrice.toFixed(decimals);
 
-      // Ringkasan untuk Banner & Injeksi Prompt AI
       lastCalculatedPositionSummary = `Posisi Aktif: ${type} ${lot} Lot ${pair} @ ${entry} | Harga Impas (BEP + Komisi): ${bepPrice.toFixed(decimals)} | Floating Net P/L: ${netPL >= 0 ? '+' : ''}$${netPL.toFixed(2)} (${netPct.toFixed(2)}%) | Modal: $${balance.toFixed(2)} | Equity: $${equity.toFixed(2)} | Used Margin: $${usedMargin.toFixed(2)} (Leverage 1:${leverage}) | Free Margin: $${freeMargin.toFixed(2)} | Margin Level: ${marginLevel.toFixed(1)}% | Estimasi Stop Out: ${stopOutPrice.toFixed(decimals)}`;
 
       document.getElementById('calcSummaryBanner').innerHTML = `
@@ -1131,6 +1626,10 @@ Contoh:
         document.getElementById('priceDisplay').innerText = currentPrice;
         document.getElementById('calcCurrentPriceLabel').innerText = currentPrice;
       }
+
+      if (document.getElementById('tabContentMarket').style.display === 'block') {
+        renderAllMtfCharts();
+      }
       return currentPrice;
     }
 
@@ -1141,7 +1640,6 @@ Contoh:
       const incM5 = document.getElementById('checkM5').checked;
       const incPos = document.getElementById('checkPosition').checked;
 
-      // Hitung ulang posisi otomatis jika checkbox aktif
       let posText = "Tidak ada posisi aktif (Akun Flat).";
       if (incPos) {
         const pType = document.getElementById('posType').value;
@@ -1166,10 +1664,10 @@ WAKTU ANALISIS: ${utcString}
 STATUS POSISI & KALKULATOR BROKER SAYA: ${posText}
 
 DATA STRUKTUR MULTI-TIMEFRAME:
-- D1: Trend Utama Bullish di atas EMA20/EMA50. Major Support: ${(price * 0.985).toFixed(3)}, Resistance: ${(price * 1.018).toFixed(3)}.
-- H4: Pengujian Supply Zone. Struktur Higher Low (HL) bertahan kuat. ATR(14): ${(price * 0.008).toFixed(3)}.
-- H1: Terbentuk Change of Character (CHoCH) Bullish. Swing Support intraday terdekat: ${(price * 0.993).toFixed(3)}.
-- M15: Terjadi Rejection Wick bawah pada completed candle. Volume konfirmasi meningkat.${incM5 ? `\n- M5: Konsolidasi mikro di area penembusan resistance.` : ''}
+- D1: Trend Utama Bullish di atas EMA20/EMA50. Major Support: ${(price * 0.978).toFixed(3)}, Major Resistance: ${(price * 1.015).toFixed(3)}.
+- H4: Konsolidasi menguji Supply Zone (${(price * 1.0010).toFixed(3)} - ${(price * 1.0045).toFixed(3)}). Struktur Higher Low (HL) bertahan di ${(price * 0.9910).toFixed(3)}.
+- H1: Terbentuk Change of Character (CHoCH) Bullish di atas ${(price * 0.9970).toFixed(3)}. Swing Support intraday terdekat: ${(price * 0.9925).toFixed(3)}.
+- M15: Terjadi Rejection Wick bawah pada zona Demand/Support Retest ${(price * 0.9982).toFixed(3)}.${incM5 ? `\n- M5: Konsolidasi mikro di antara range ${(price * 0.9988).toFixed(3)} hingga trigger breakout ${(price * 1.0012).toFixed(3)}.` : ''}
 
 ATURAN STRATEGI & GAYA BAHASA (PENTING):
 1. PENDING ORDER ONLY: Hanya boleh merekomendasikan "BUY STOP", "SELL STOP", "BUY LIMIT", "SELL LIMIT", atau "NO TRADE / WAIT FIRST".
@@ -1205,7 +1703,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
     function copyPromptToClipboard() {
       const text = document.getElementById('promptOutput').value;
       if (!text) {
-        alert('Prompt masih kosong! Klik tombol "1. AMBIL DATA TWELVE DATA & BUAT PROMPT" terlebih dahulu.');
+        alert('Prompt masih kosong! Klik tombol "1. AMBIL DATA & BUAT PROMPT" terlebih dahulu.');
         return;
       }
       navigator.clipboard.writeText(text).then(() => {
@@ -1225,7 +1723,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
 
       if (!raw) {
         resCard.style.display = 'block';
-        resCard.innerHTML = '<span style="color:var(--danger);">Silakan tempelkan teks balasan JSON dari ChatGPT / Claude / Gemini terlebih dahulu.</span>';
+        resCard.innerHTML = '<span style="color:var(--danger);">Silakan klik tombol "📋 Paste (Tempel)" atau masukkan teks JSON dari AI terlebih dahulu.</span>';
         return;
       }
 
@@ -1306,7 +1804,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       }
     }
 
-    // FUNGSI PENGGAMBAR CHART TRADINGVIEW & LEVEL OTOMATIS
+    // FUNGSI PENGGAMBAR CHART VALIDATOR (TAB 1)
     function renderSetupChart(data) {
       const chartBox = document.getElementById('chartSetupContainer');
       const chartEl = document.getElementById('aiLevelChart');
@@ -1317,6 +1815,14 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       chartInstance = LightweightCharts.createChart(chartEl, {
         width: chartEl.clientWidth,
         height: 280,
+        watermark: {
+          visible: true,
+          fontSize: 18,
+          horzAlign: 'center',
+          vertAlign: 'center',
+          color: 'rgba(56, 189, 248, 0.14)',
+          text: `${data.instrument || 'PAIR'} - ${data.signal || 'SETUP'}`,
+        },
         layout: {
           background: { color: '#060b13' },
           textColor: '#94a3b8',
@@ -1349,12 +1855,11 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
 
       const pair = data.instrument || document.getElementById('pairSelect').value;
       document.getElementById('chartPairBadge').innerText = pair;
-      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4065.99;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4066.03;
       
-      const candles = generateSimulatedCandles(currentPrice);
+      const candles = generatePatternedCandles(currentPrice, 35, 900, 'M15_RETEST');
       candleSeriesInstance.setData(candles);
 
-      // 1. Garis ENTRY (Biru Solid)
       if (data.entry) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.entry),
@@ -1366,7 +1871,6 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 2. Garis TAKE PROFIT (Hijau Putus-putus)
       if (data.tp) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.tp),
@@ -1378,7 +1882,6 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 3. Garis STOP LOSS (Merah Putus-putus)
       if (data.sl) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.sl),
@@ -1390,7 +1893,6 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 4. Garis Warning / Referensi S-R (Kuning Titik-titik)
       let refLevel = data.warningLevel || data.biasReversalLevel;
       if (!refLevel && (data.reason || data.confirmationCondition)) {
         const fullText = (data.reason || '') + ' ' + (data.confirmationCondition || '');
@@ -1415,26 +1917,6 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       }
 
       chartInstance.timeScale().fitContent();
-    }
-
-    function generateSimulatedCandles(basePrice) {
-      const candles = [];
-      const nowSec = Math.floor(Date.now() / 1000);
-      let t = nowSec - (30 * 900);
-      let p = basePrice * 0.995;
-      const volatility = basePrice > 1000 ? 2.5 : (basePrice > 50 ? 0.25 : 0.0015);
-
-      for (let i = 0; i < 30; i++) {
-        const delta = (Math.random() - 0.47) * volatility;
-        const open = p;
-        const close = i === 29 ? basePrice : open + delta;
-        const high = Math.max(open, close) + Math.random() * (volatility * 0.6);
-        const low = Math.min(open, close) - Math.random() * (volatility * 0.6);
-        candles.push({ time: t, open, high, low, close });
-        p = close;
-        t += 900;
-      }
-      return candles;
     }
   </script>
 </body>
