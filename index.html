@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Quant Prompt Engine & AI Launcher</title>
+  <title>Quant Prompt Engine & AI Visual Chart</title>
+  
+  <!-- Library Resmi TradingView Lightweight Charts (Open-Source & Ultra Ringan) -->
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
   <style>
     :root {
       --bg-dark: #0a0f1d;
@@ -228,11 +232,11 @@
 
     .workspace-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 12px;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 960px) {
       .workspace-grid {
         grid-template-columns: 1fr;
       }
@@ -286,7 +290,47 @@
       border-color: #1e293b;
     }
 
-    /* MODAL OVERLAY */
+    /* CHART WRAPPER */
+    .chart-panel-card {
+      background: #060b13;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 12px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 6px;
+    }
+
+    .chart-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.7rem;
+      margin-top: 6px;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    /* MODAL OVERLAYS */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -332,10 +376,10 @@
   <header>
     <div class="brand-group">
       <div class="brand-title">🟡 QUANT PROMPT ENGINE</div>
-      <span class="brand-badge" id="pairBadge">FOREX MAJOR</span>
+      <span class="brand-badge" id="pairBadge">COMMODITY</span>
       <select id="pairSelect" style="width: auto; padding: 4px 8px; font-weight: 700;" onchange="onPairChange()">
-        <option value="XAU/USD">XAU/USD (Gold)</option>
-        <option value="USD/JPY" selected>USD/JPY</option>
+        <option value="XAU/USD" selected>XAU/USD (Gold)</option>
+        <option value="USD/JPY">USD/JPY</option>
         <option value="EUR/USD">EUR/USD</option>
         <option value="GBP/USD">GBP/USD</option>
         <option value="AUD/USD">AUD/USD</option>
@@ -344,14 +388,14 @@
 
     <div class="top-controls">
       <div style="font-size: 0.75rem; color: var(--text-muted);">HARGA SAAT INI:</div>
-      <div id="priceDisplay" class="price-pill">152.516</div>
+      <div id="priceDisplay" class="price-pill">2742.60</div>
       <div id="sourceDisplay" class="source-pill">MODE SIMULASI (DEMO)</div>
       <button class="btn btn-blue btn-sm" onclick="fetchMarketData()">🔄 Ambil Data MTF</button>
       <button class="btn btn-dark btn-sm" onclick="openApiModal()">⚙ API Twelve Data</button>
     </div>
   </header>
 
-  <!-- TAB MENU & AI WEB LAUNCHER ROW -->
+  <!-- TAB MENU & AI LAUNCHER ROW -->
   <div class="tab-navigation-container">
     <div class="tab-nav-left">
       <button id="tabBtn1" class="btn-tab active" onclick="switchTab('prompt')">📑 1. GENERATOR PROMPT AI & VALIDATOR</button>
@@ -384,15 +428,15 @@
   <div class="steps-grid">
     <div class="step-box">
       <div class="step-title"><span class="step-badge">1</span> AMBIL OHLC & HITUNG INDIKATOR</div>
-      <div class="step-desc">Tarik data D1, H4, H1, dan M15 dari Twelve Data untuk menghitung EMA, ATR, Swing S/R secara otomatis.</div>
+      <div class="step-desc">Tarik data D1, H4, H1, dan M15 untuk menghitung EMA, ATR, Swing S/R secara otomatis.</div>
     </div>
     <div class="step-box">
       <div class="step-title"><span class="step-badge">2</span> SALIN PROMPT KE AI BROWSER</div>
-      <div class="step-desc">Klik tombol kuning salin, lalu klik salah satu logo AI di atas (ChatGPT/Claude/Gemini) untuk tempel tanpa saldo API token.</div>
+      <div class="step-desc">Klik tombol kuning, lalu klik salah satu logo AI di atas untuk ditempelkan secara gratis tanpa biaya token.</div>
     </div>
     <div class="step-box">
-      <div class="step-title"><span class="step-badge">3</span> VALIDASI & RENDER JSON</div>
-      <div class="step-desc">Tempel balasan JSON dari AI ke kolom validator di sebelah kanan untuk memastikan rasio RR ≥ 1:2 terpenuhi.</div>
+      <div class="step-title"><span class="step-badge">3</span> VALIDASI & RENDER CHART</div>
+      <div class="step-desc">Tempel balasan JSON ke validator: sistem memeriksa syarat RR ≥ 1:2 dan langsung memetakan level di chart visual.</div>
     </div>
   </div>
 
@@ -426,40 +470,68 @@
         </div>
 
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between;" id="promptMeta">
-          <span>INSTRUMEN: USD/JPY (MODE SIMULASI)</span>
+          <span id="promptPairInfo">INSTRUMEN: XAU/USD (MODE SIMULASI)</span>
           <span id="promptTimestamp">UPDATE: BELUM DIBUAT</span>
         </div>
 
-        <textarea id="promptOutput" class="code-box" readonly placeholder="Klik '1. AMBIL DATA TWELVE DATA & BUAT PROMPT' di atas untuk menyusun prompt..."></textarea>
+        <textarea id="promptOutput" class="code-box" readonly placeholder="Klik '1. AMBIL DATA TWELVE DATA & BUAT PROMPT' di atas untuk menyusun prompt analisis institusional..."></textarea>
       </div>
 
-      <!-- KOLOM KANAN: VALIDATOR JSON HASIL AI -->
+      <!-- KOLOM KANAN: VALIDATOR JSON & VISUALISASI CHART -->
       <div class="card">
         <div style="margin-bottom: 8px;">
-          <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-transform: uppercase;">Langkah 3 (Opsional)</div>
-          <h2 style="font-size: 1rem; color: var(--text-main);">Validator & Visualisasi Balasan AI Browser</h2>
+          <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-transform: uppercase;">Langkah 3</div>
+          <h2 style="font-size: 1rem; color: var(--text-main);">Validator Setup & Visualisasi Level Chart</h2>
         </div>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-          Tempel balasan JSON murni dari ChatGPT / Claude / Gemini di bawah untuk memverifikasi struktur order (Pending Order, SL/TP logis, dan RR ≥ 1:2).
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+          Tempel balasan JSON murni dari ChatGPT / Claude / Gemini untuk memeriksa logika order dan merender garis support, resistance, SL, serta TP ke chart:
         </p>
 
-        <textarea id="aiJsonInput" class="code-box" style="min-height: 140px; margin-bottom: 10px;" placeholder='Tempel hasil JSON dari ChatGPT / Claude / Gemini di sini...
-Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
+        <textarea id="aiJsonInput" class="code-box" style="min-height: 120px; margin-bottom: 8px;" placeholder='Tempelkan balasan JSON dari AI di sini...
+Contoh:
+{
+  "instrument": "XAU/USD",
+  "signal": "BUY LIMIT",
+  "entry": 2738.5,
+  "sl": 2732.0,
+  "tp": 2755.0,
+  "warningLevel": 2748.0,
+  "reason": "..."
+}'></textarea>
 
-        <button class="btn btn-dark" style="width: 100%; margin-bottom: 10px;" onclick="validateAiJson()">
-          ✔ Verifikasi Setup & Hitung Rasio RR
+        <button class="btn btn-dark" style="width: 100%; margin-bottom: 8px;" onclick="validateAiJson()">
+          ✔ Verifikasi Setup, Hitung RR & Render Chart
         </button>
 
+        <!-- KARTU HASIL VALIDASI TEKS -->
         <div id="validationResultCard" style="display: none; background: #060b13; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 0.8rem; line-height: 1.5;"></div>
+
+        <!-- VISUALISASI CHART CANDLESTICK & LEVEL ORDER -->
+        <div id="chartSetupContainer" class="chart-panel-card" style="display: none;">
+          <div class="chart-header">
+            <span style="font-size: 0.75rem; font-weight: 800; color: var(--primary);">📊 VISUALISASI LEVEL ORDER & STRUKTUR</span>
+            <span id="chartPairBadge" style="font-size: 0.7rem; color: #f59e0b; font-weight: 700;">XAU/USD</span>
+          </div>
+          
+          <!-- Elemen Canvas TradingView -->
+          <div id="aiLevelChart" style="width: 100%; height: 280px;"></div>
+
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-indicator" style="background: #38bdf8;"></div> Entry (Solid)</div>
+            <div class="legend-item"><div class="legend-indicator" style="background: #22c55e;"></div> TP (Dashed)</div>
+            <div class="legend-item"><div class="legend-indicator" style="background: #ef4444;"></div> SL (Dashed)</div>
+            <div class="legend-item"><div class="legend-indicator" style="background: #f59e0b;"></div> Resistance/Ref (Dotted)</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- AREA TAB 2: MARKET ANALYSIS (PLACEHOLDER RINGKAS) -->
+  <!-- AREA TAB 2: MARKET ANALYSIS -->
   <div id="tabContentMarket" style="display: none;">
     <div class="card">
       <h3 style="color: var(--primary); margin-bottom: 8px;">Ringkasan Data Multi-Timeframe</h3>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Data level teknikal yang telah dihitung dari candle terbaru:</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Level acuan teknikal yang dihitung otomatis dari penutupan candle terakhir:</p>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
         <div class="step-box"><strong>D1 Trend:</strong> <span id="mD1">Bullish di atas EMA50</span></div>
         <div class="step-box"><strong>H4 Structure:</strong> <span id="mH4">Konsolidasi Supply Zone</span></div>
@@ -469,23 +541,23 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
     </div>
   </div>
 
-  <!-- AREA TAB 3: POSISI & KALKULATOR BROKER -->
+  <!-- AREA TAB 3: POSISI SAYA & KALKULATOR BROKER -->
   <div id="tabContentPosition" style="display: none;">
     <div class="card">
       <h3 style="color: var(--accent); margin-bottom: 8px;">Kalkulator Broker & Posisi Aktif</h3>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Gunakan untuk memasukkan floating posisi Anda saat ini agar diikutsertakan ke dalam prompt rekomendasi:</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Masukkan floating posisi Anda saat ini agar dianalisis oleh AI dalam prompt rekomendasi:</p>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 500px;">
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted);">Tipe Posisi:</label>
           <select id="posType">
-            <option value="NONE">Tidak Ada Posisi</option>
+            <option value="NONE">Tidak Ada Posisi (Flat)</option>
             <option value="BUY">BUY</option>
             <option value="SELL">SELL</option>
           </select>
         </div>
         <div>
           <label style="font-size: 0.75rem; color: var(--text-muted);">Harga Entry:</label>
-          <input type="number" id="posEntry" placeholder="Misal 152.100" step="any">
+          <input type="number" id="posEntry" placeholder="Misal 2740.50" step="any">
         </div>
       </div>
     </div>
@@ -499,7 +571,7 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
         <span style="cursor: pointer; font-size: 1.2rem; color: var(--text-muted);" onclick="closeApiModal()">&times;</span>
       </div>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
-        Kunci API disimpan secara lokal di memori browser perangkat Anda.
+        Kunci API disimpan secara aman di memori browser lokal perangkat Anda (`localStorage`).
       </p>
       <div style="margin-bottom: 10px;">
         <label style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Twelve Data API Key:</label>
@@ -527,7 +599,7 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
         <span style="cursor: pointer; font-size: 1.2rem; color: var(--text-muted);" onclick="closeAiUrlModal()">&times;</span>
       </div>
       <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
-        Ubah alamat di bawah jika Anda menggunakan versi enterprise, domain proxy, atau web AI lainnya:
+        Ubah alamat di bawah jika Anda menggunakan versi enterprise atau model web AI lainnya:
       </p>
 
       <div style="margin-bottom: 8px;">
@@ -556,9 +628,8 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
 
   <div id="toast" class="notification">Tersalin ke Clipboard!</div>
 
-  <!-- LOGIKA JAVASCRIPT -->
+  <!-- SCRIPT LOGIKA UTAMA -->
   <script>
-    // Konfigurasi Standar
     const DEFAULT_AI_URLS = {
       chatgpt: "https://chatgpt.com",
       claude: "https://claude.ai/new",
@@ -574,7 +645,10 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       "AUD/USD": 0.65830
     };
 
-    // Inisialisasi Saat Halaman Dimuat
+    let chartInstance = null;
+    let candleSeriesInstance = null;
+
+    // Inisialisasi Saat Dokumen Dimuat
     window.addEventListener('DOMContentLoaded', () => {
       const savedKey = localStorage.getItem('td_api_key') || '';
       const savedMode = localStorage.getItem('td_api_mode') || 'sim';
@@ -582,6 +656,14 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       document.getElementById('inputApiMode').value = savedMode;
       updateHeaderSourcePill(savedMode);
       onPairChange();
+
+      // Responsivitas Chart saat resize layar
+      window.addEventListener('resize', () => {
+        if (chartInstance) {
+          const el = document.getElementById('aiLevelChart');
+          chartInstance.applyOptions({ width: el.clientWidth });
+        }
+      });
     });
 
     function showToast(msg) {
@@ -607,10 +689,12 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       const pair = document.getElementById('pairSelect').value;
       const mode = localStorage.getItem('td_api_mode') || 'sim';
       document.getElementById('pairBadge').innerText = pair === 'XAU/USD' ? 'COMMODITY' : 'FOREX MAJOR';
+      document.getElementById('chartPairBadge').innerText = pair;
       if (mode === 'sim') {
         const p = SIMULATION_PRICES[pair] || 100.0;
         document.getElementById('priceDisplay').innerText = p;
       }
+      document.getElementById('promptPairInfo').innerText = `INSTRUMEN: ${pair} (${mode === 'live' ? 'LIVE' : 'MODE SIMULASI'})`;
     }
 
     function updateHeaderSourcePill(mode) {
@@ -627,20 +711,17 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
     }
 
     // Modal API Twelve Data
-    function openApiModal() {
-      document.getElementById('apiModal').style.display = 'flex';
-    }
-    function closeApiModal() {
-      document.getElementById('apiModal').style.display = 'none';
-    }
+    function openApiModal() { document.getElementById('apiModal').style.display = 'flex'; }
+    function closeApiModal() { document.getElementById('apiModal').style.display = 'none'; }
     function saveApiSettings() {
       const key = document.getElementById('inputApiKey').value.trim();
       const mode = document.getElementById('inputApiMode').value;
       localStorage.setItem('td_api_key', key);
       localStorage.setItem('td_api_mode', mode);
       updateHeaderSourcePill(mode);
+      onPairChange();
       closeApiModal();
-      showToast('Pengaturan API disimpan!');
+      showToast('Konfigurasi API disimpan!');
       if (mode === 'live') fetchMarketData();
     }
 
@@ -671,9 +752,7 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       document.getElementById('aiUrlModal').style.display = 'flex';
     }
 
-    function closeAiUrlModal() {
-      document.getElementById('aiUrlModal').style.display = 'none';
-    }
+    function closeAiUrlModal() { document.getElementById('aiUrlModal').style.display = 'none'; }
 
     function saveAiUrls() {
       const updated = {
@@ -684,17 +763,17 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       };
       localStorage.setItem('user_ai_urls', JSON.stringify(updated));
       closeAiUrlModal();
-      showToast('Tautan Web AI berhasil disimpan!');
+      showToast('Tautan Web AI disimpan!');
     }
 
     function resetAiUrls() {
-      if (confirm('Kembalikan seluruh tautan web AI ke pengaturan default?')) {
+      if (confirm('Kembalikan tautan Web AI ke alamat awal?')) {
         localStorage.removeItem('user_ai_urls');
         openAiUrlModal();
       }
     }
 
-    // Ambil Data Pasar & Buat Prompt
+    // Ambil Data Pasar
     async function fetchMarketData() {
       const pair = document.getElementById('pairSelect').value;
       const mode = localStorage.getItem('td_api_mode') || 'sim';
@@ -703,7 +782,7 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
       if (mode === 'live') {
         const apiKey = localStorage.getItem('td_api_key');
         if (!apiKey) {
-          alert('API Key Twelve Data belum diisi! Silakan klik tombol "⚙ API Twelve Data" di atas.');
+          alert('API Key Twelve Data belum diisi! Silakan klik tombol "⚙ API Twelve Data".');
           openApiModal();
           return currentPrice;
         }
@@ -714,7 +793,7 @@ Contoh: {"instrument":"USD/JPY","signal":"BUY LIMIT",...}'></textarea>
             currentPrice = parseFloat(json.price);
             document.getElementById('priceDisplay').innerText = currentPrice;
           } else {
-            alert('Gagal mengambil harga live: ' + (json.message || 'Error API'));
+            alert('Gagal mengambil data live: ' + (json.message || 'Error API'));
           }
         } catch (e) {
           alert('Koneksi Twelve Data gagal: ' + e.message);
@@ -781,7 +860,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
 
       document.getElementById('promptOutput').value = promptTemplate;
       document.getElementById('promptTimestamp').innerText = 'UPDATE: ' + utcString;
-      showToast('Prompt berhasil dibuat!');
+      showToast('Prompt berhasil disusun!');
     }
 
     function copyPromptToClipboard() {
@@ -796,11 +875,11 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         const ta = document.getElementById('promptOutput');
         ta.select();
         document.execCommand('copy');
-        showToast('Prompt disalin ke clipboard!');
+        showToast('Prompt berhasil disalin!');
       });
     }
 
-    // Validasi Respon AI Browser
+    // Validasi Balasan JSON AI & Render Chart
     function validateAiJson() {
       const raw = document.getElementById('aiJsonInput').value.trim();
       const resCard = document.getElementById('validationResultCard');
@@ -823,6 +902,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
             <div><strong>Alasan:</strong> ${data.reason || '-'}</div>
             <div><strong>Syarat Konfirmasi:</strong> ${data.confirmationCondition || '-'}</div>
           `;
+          renderSetupChart(data);
           return;
         }
 
@@ -849,10 +929,149 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
           <div><strong>Syarat Validasi:</strong> ${data.confirmationCondition || '-'}</div>
           <div><strong>Pembatalan:</strong> ${data.cancellationCondition || '-'}</div>
         `;
+
+        renderSetupChart(data);
       } catch (err) {
         resCard.style.display = 'block';
-        resCard.innerHTML = `<span style="color:var(--danger);">Gagal membaca JSON: ${err.message}. Pastikan hanya menyalin blok kurung kurawal {...} balasan AI.</span>`;
+        resCard.innerHTML = `<span style="color:var(--danger);">Gagal membaca JSON: ${err.message}. Pastikan menyalin blok kurung kurawal {...} balasan AI.</span>`;
       }
+    }
+
+    // FUNGSI PENGGAMBAR CHART TRADINGVIEW & LEVEL OTOMATIS
+    function renderSetupChart(data) {
+      const chartBox = document.getElementById('chartSetupContainer');
+      const chartEl = document.getElementById('aiLevelChart');
+      chartBox.style.display = 'block';
+
+      // Reset kontainer chart lama
+      chartEl.innerHTML = '';
+
+      // Inisialisasi TradingView Lightweight Charts
+      chartInstance = LightweightCharts.createChart(chartEl, {
+        width: chartEl.clientWidth,
+        height: 280,
+        layout: {
+          background: { color: '#060b13' },
+          textColor: '#94a3b8',
+        },
+        grid: {
+          vertLines: { color: '#131d31' },
+          horzLines: { color: '#131d31' },
+        },
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+          borderColor: '#1e293b'
+        },
+        rightPriceScale: {
+          borderColor: '#1e293b',
+          scaleMargins: {
+            top: 0.15,
+            bottom: 0.15,
+          },
+        }
+      });
+
+      candleSeriesInstance = chartInstance.addCandlestickSeries({
+        upColor: '#10b981',
+        downColor: '#ef4444',
+        borderVisible: false,
+        wickUpColor: '#10b981',
+        wickDownColor: '#ef4444',
+      });
+
+      // Ambil harga saat ini dan buat rentang candle terkini
+      const pair = data.instrument || document.getElementById('pairSelect').value;
+      document.getElementById('chartPairBadge').innerText = pair;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 2740;
+      
+      const candles = generateSimulatedCandles(currentPrice);
+      candleSeriesInstance.setData(candles);
+
+      // 1. Gambar Garis ENTRY (Biru Solid)
+      if (data.entry) {
+        candleSeriesInstance.createPriceLine({
+          price: parseFloat(data.entry),
+          color: '#38bdf8',
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: `${data.signal || 'ENTRY'}: ${data.entry}`,
+        });
+      }
+
+      // 2. Gambar Garis TAKE PROFIT (Hijau Putus-putus)
+      if (data.tp) {
+        candleSeriesInstance.createPriceLine({
+          price: parseFloat(data.tp),
+          color: '#22c55e',
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: `TP: ${data.tp}`,
+        });
+      }
+
+      // 3. Gambar Garis STOP LOSS (Merah Putus-putus)
+      if (data.sl) {
+        candleSeriesInstance.createPriceLine({
+          price: parseFloat(data.sl),
+          color: '#ef4444',
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: `SL: ${data.sl}`,
+        });
+      }
+
+      // 4. Deteksi & Gambar Level Warning / Level Referensi S-R (Kuning/Oranye Titik-titik)
+      let refLevel = data.warningLevel || data.biasReversalLevel;
+      
+      // Jika AI menulis angka level resistance/support di dalam teks alasan/konfirmasi (seperti 161.334)
+      if (!refLevel && (data.reason || data.confirmationCondition)) {
+        const fullText = (data.reason || '') + ' ' + (data.confirmationCondition || '');
+        const match = fullText.match(/(\d{3,5}\.\d{2,4}|\d{1,2}\.\d{4,5})/);
+        if (match) {
+          const parsed = parseFloat(match[1]);
+          if (!isNaN(parsed) && parsed !== parseFloat(data.entry)) {
+            refLevel = parsed;
+          }
+        }
+      }
+
+      if (refLevel) {
+        candleSeriesInstance.createPriceLine({
+          price: parseFloat(refLevel),
+          color: '#f59e0b',
+          lineWidth: 1.5,
+          lineStyle: LightweightCharts.LineStyle.Dotted,
+          axisLabelVisible: true,
+          title: `REF / RES: ${refLevel}`,
+        });
+      }
+
+      chartInstance.timeScale().fitContent();
+    }
+
+    // Generator lilin candle realistis (15 menit terakhir)
+    function generateSimulatedCandles(basePrice) {
+      const candles = [];
+      const nowSec = Math.floor(Date.now() / 1000);
+      let t = nowSec - (30 * 900); // 30 candle x 15 menit
+      let p = basePrice * 0.995;
+      const volatility = basePrice > 1000 ? 2.5 : (basePrice > 50 ? 0.25 : 0.0015);
+
+      for (let i = 0; i < 30; i++) {
+        const delta = (Math.random() - 0.47) * volatility;
+        const open = p;
+        const close = i === 29 ? basePrice : open + delta;
+        const high = Math.max(open, close) + Math.random() * (volatility * 0.6);
+        const low = Math.min(open, close) - Math.random() * (volatility * 0.6);
+        candles.push({ time: t, open, high, low, close });
+        p = close;
+        t += 900;
+      }
+      return candles;
     }
   </script>
 </body>
