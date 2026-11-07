@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Quant Prompt Engine & AI Visual Chart</title>
+  <title>Quant Prompt Engine & Broker Calculator</title>
   
-  <!-- Library Resmi TradingView Lightweight Charts (Ultra Ringan) -->
+  <!-- Library Resmi TradingView Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -242,6 +242,44 @@
       }
     }
 
+    /* KALKULATOR BROKER GRID */
+    .calc-form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .calc-result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .metric-card {
+      background: #0b1120;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
     /* FORMS & BUTTONS */
     .btn {
       display: inline-flex;
@@ -262,15 +300,25 @@
     .btn-blue:hover { background: #1d4ed8; }
     .btn-orange { background: #d97706; color: #111827; }
     .btn-orange:hover { background: #b45309; }
+    .btn-green { background: #059669; color: #fff; }
+    .btn-green:hover { background: #047857; }
     .btn-dark { background: #1f2937; color: var(--text-main); border: 1px solid var(--border-color); }
     .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
+
+    label.field-label {
+      display: block;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
 
     input, select, textarea {
       width: 100%;
       background-color: #0b1120;
       border: 1px solid var(--border-color);
       color: var(--text-main);
-      padding: 9px;
+      padding: 9px 10px;
       border-radius: 6px;
       font-size: 0.85rem;
       outline: none;
@@ -388,7 +436,7 @@
 
     <div class="top-controls">
       <div style="font-size: 0.75rem; color: var(--text-muted);">HARGA SAAT INI:</div>
-      <div id="priceDisplay" class="price-pill">2742.60</div>
+      <div id="priceDisplay" class="price-pill">4065.99</div>
       <div id="sourceDisplay" class="source-pill">MODE SIMULASI (DEMO)</div>
       <button class="btn btn-blue btn-sm" onclick="fetchMarketData()">🔄 Ambil Data MTF</button>
       <button class="btn btn-dark btn-sm" onclick="openApiModal()">⚙ API Twelve Data</button>
@@ -492,10 +540,10 @@ Contoh:
 {
   "instrument": "XAU/USD",
   "signal": "BUY LIMIT",
-  "entry": 2738.5,
-  "sl": 2732.0,
-  "tp": 2755.0,
-  "warningLevel": 2748.0,
+  "entry": 4050.5,
+  "sl": 4034.0,
+  "tp": 4095.0,
+  "warningLevel": 4045.0,
   "reason": "...",
   "glossary": "..."
 }'></textarea>
@@ -542,24 +590,126 @@ Contoh:
     </div>
   </div>
 
-  <!-- AREA TAB 3: POSISI SAYA & KALKULATOR BROKER -->
+  <!-- AREA TAB 3: POSISI SAYA & KALKULATOR BROKER LENGKAP -->
   <div id="tabContentPosition" style="display: none;">
     <div class="card">
-      <h3 style="color: var(--accent); margin-bottom: 8px;">Kalkulator Broker & Posisi Aktif</h3>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Masukkan floating posisi Anda saat ini agar dianalisis oleh AI dalam prompt rekomendasi:</p>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+        <h3 style="color: var(--accent); font-size: 1.05rem;">💼 Kalkulator Broker & Posisi Aktif</h3>
+        <span style="font-size: 0.75rem; color: var(--primary); background: rgba(56, 189, 248, 0.1); padding: 4px 10px; border-radius: 6px; font-weight: 700;">
+          Harga Pasar Acuan (<span id="calcPairLabel">XAU/USD</span>): <span id="calcCurrentPriceLabel">4065.99</span>
+        </span>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">
+        Masukkan detail posisi terbuka, modal, leverage, dan komisi broker Anda. Hasil kalkulasi akan disertakan otomatis ke dalam prompt AI untuk analisis manajemen risiko:
+      </p>
+
+      <!-- FORM INPUT KALKULATOR BROKER -->
+      <div class="calc-form-grid">
         <div>
-          <label style="font-size: 0.75rem; color: var(--text-muted);">Tipe Posisi:</label>
+          <label class="field-label" for="posType">1. Pilih Posisi (Buy / Sell):</label>
           <select id="posType">
-            <option value="NONE">Tidak Ada Posisi (Flat)</option>
-            <option value="BUY">BUY</option>
-            <option value="SELL">SELL</option>
+            <option value="BUY" selected>🟢 BUY (Long)</option>
+            <option value="SELL">🔴 SELL (Short)</option>
+            <option value="NONE">⚪ Tidak Ada Posisi (Flat)</option>
           </select>
         </div>
+
         <div>
-          <label style="font-size: 0.75rem; color: var(--text-muted);">Harga Entry:</label>
-          <input type="number" id="posEntry" placeholder="Misal 2740.50" step="any">
+          <label class="field-label" for="posEntry">2. Harga Entry:</label>
+          <input type="number" id="posEntry" placeholder="Contoh: 4050.50" step="any" value="4050.50">
         </div>
+
+        <div>
+          <label class="field-label" for="posLot">3. Lot yang Digunakan:</label>
+          <input type="number" id="posLot" placeholder="Contoh: 0.10" step="0.01" min="0.01" value="0.10">
+        </div>
+
+        <div>
+          <label class="field-label" for="posBalance">4. Modal / Saldo ($ USD):</label>
+          <input type="number" id="posBalance" placeholder="Contoh: 1000" step="any" min="1" value="1000">
+        </div>
+
+        <div>
+          <label class="field-label" for="posLeverage">5. Pilih Leverage:</label>
+          <select id="posLeverage">
+            <option value="100">1:100</option>
+            <option value="200">1:200</option>
+            <option value="300">1:300</option>
+            <option value="400">1:400</option>
+            <option value="500" selected>1:500</option>
+            <option value="1000">1:1000</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="field-label" for="posCommission">6. Biaya Broker per 1 Lot ($):</label>
+          <input type="number" id="posCommission" placeholder="Contoh: 7" step="any" min="0" value="7">
+        </div>
+      </div>
+
+      <!-- TOMBOL KALKULASIKAN -->
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-orange" style="flex: 1; min-width: 220px; font-size: 0.9rem;" onclick="calculateBrokerPosition()">
+          🧮 KALKULASIKAN POSISI & MARGIN
+        </button>
+        <button class="btn btn-dark" style="width: auto;" onclick="resetBrokerCalculator()">
+          🔄 Reset
+        </button>
+      </div>
+
+      <!-- HASIL KALKULASI BROKER -->
+      <div id="brokerCalcOutput" style="display: none;">
+        <div class="calc-result-grid">
+          <div class="metric-card">
+            <div class="metric-label">Floating P/L Kotor</div>
+            <div id="resGrossPL" class="metric-value">$0.00</div>
+            <div id="resPipsDiff" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">0.00 poin</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Total Biaya Broker</div>
+            <div id="resBrokerFee" class="metric-value" style="color: #f59e0b;">-$0.00</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Komisi / Fee</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Floating P/L Bersih (Net)</div>
+            <div id="resNetPL" class="metric-value">$0.00</div>
+            <div id="resNetPct" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">0.00% dari Modal</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Harga Break-Even (BEP)</div>
+            <div id="resBepPrice" class="metric-value" style="color: var(--primary);">0.00</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Titik Impas + Komisi</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Margin Terpakai (Used)</div>
+            <div id="resUsedMargin" class="metric-value">$0.00</div>
+            <div id="resContractInfo" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Lev 1:500</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Equity & Free Margin</div>
+            <div id="resEquity" class="metric-value">$0.00</div>
+            <div id="resFreeMargin" style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Free: $0.00</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Margin Level (%)</div>
+            <div id="resMarginLevel" class="metric-value">0.00%</div>
+            <div id="resMarginStatus" style="font-size: 0.7rem; font-weight: 700; margin-top: 2px;">STATUS AMAN</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-label">Ketahanan Poin / Jarak MC</div>
+            <div id="resPointEndurance" class="metric-value" style="color: #cbd5e1;">0.00</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">Est. Stop Out: <span id="resStopOutPrice">-</span></div>
+          </div>
+        </div>
+
+        <div id="calcSummaryBanner" style="margin-top: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px 12px; border-radius: 8px; font-size: 0.78rem; line-height: 1.5; color: #d1fae5;"></div>
       </div>
     </div>
   </div>
@@ -639,7 +789,7 @@ Contoh:
     };
 
     const SIMULATION_PRICES = {
-      "XAU/USD": 2742.60,
+      "XAU/USD": 4065.99,
       "USD/JPY": 152.516,
       "EUR/USD": 1.08520,
       "GBP/USD": 1.29840,
@@ -648,6 +798,7 @@ Contoh:
 
     let chartInstance = null;
     let candleSeriesInstance = null;
+    let lastCalculatedPositionSummary = "";
 
     // Inisialisasi Saat Dokumen Dimuat
     window.addEventListener('DOMContentLoaded', () => {
@@ -656,9 +807,9 @@ Contoh:
       document.getElementById('inputApiKey').value = savedKey;
       document.getElementById('inputApiMode').value = savedMode;
       updateHeaderSourcePill(savedMode);
+      loadSavedBrokerInputs();
       onPairChange();
 
-      // Responsivitas Chart saat resize layar
       window.addEventListener('resize', () => {
         if (chartInstance) {
           const el = document.getElementById('aiLevelChart');
@@ -683,6 +834,11 @@ Contoh:
       document.getElementById('tabBtn1').className = 'btn-tab ' + (tabId === 'prompt' ? 'active' : '');
       document.getElementById('tabBtn2').className = 'btn-tab ' + (tabId === 'market' ? 'active' : '');
       document.getElementById('tabBtn3').className = 'btn-tab ' + (tabId === 'position' ? 'active' : '');
+
+      if (tabId === 'position') {
+        document.getElementById('calcPairLabel').innerText = document.getElementById('pairSelect').value;
+        document.getElementById('calcCurrentPriceLabel').innerText = document.getElementById('priceDisplay').innerText;
+      }
     }
 
     // Perubahan Instrumen
@@ -691,9 +847,11 @@ Contoh:
       const mode = localStorage.getItem('td_api_mode') || 'sim';
       document.getElementById('pairBadge').innerText = pair === 'XAU/USD' ? 'COMMODITY' : 'FOREX MAJOR';
       document.getElementById('chartPairBadge').innerText = pair;
+      document.getElementById('calcPairLabel').innerText = pair;
       if (mode === 'sim') {
         const p = SIMULATION_PRICES[pair] || 100.0;
         document.getElementById('priceDisplay').innerText = p;
+        document.getElementById('calcCurrentPriceLabel').innerText = p;
       }
       document.getElementById('promptPairInfo').innerText = `INSTRUMEN: ${pair} (${mode === 'live' ? 'LIVE' : 'MODE SIMULASI'})`;
     }
@@ -774,6 +932,175 @@ Contoh:
       }
     }
 
+    // LOGIKA KALKULATOR BROKER & POSISI AKTIF
+    function loadSavedBrokerInputs() {
+      const saved = localStorage.getItem('broker_calc_inputs');
+      if (saved) {
+        try {
+          const d = JSON.parse(saved);
+          if (d.type) document.getElementById('posType').value = d.type;
+          if (d.entry) document.getElementById('posEntry').value = d.entry;
+          if (d.lot) document.getElementById('posLot').value = d.lot;
+          if (d.balance) document.getElementById('posBalance').value = d.balance;
+          if (d.leverage) document.getElementById('posLeverage').value = d.leverage;
+          if (d.commission !== undefined) document.getElementById('posCommission').value = d.commission;
+        } catch (e) {}
+      }
+    }
+
+    function calculateBrokerPosition() {
+      const pair = document.getElementById('pairSelect').value;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4065.99;
+      document.getElementById('calcCurrentPriceLabel').innerText = currentPrice;
+
+      const type = document.getElementById('posType').value;
+      const entry = parseFloat(document.getElementById('posEntry').value);
+      const lot = parseFloat(document.getElementById('posLot').value);
+      const balance = parseFloat(document.getElementById('posBalance').value);
+      const leverage = parseInt(document.getElementById('posLeverage').value, 10);
+      const commPerLot = parseFloat(document.getElementById('posCommission').value) || 0;
+
+      // Simpan input ke localStorage
+      localStorage.setItem('broker_calc_inputs', JSON.stringify({
+        type, entry, lot, balance, leverage, commission: commPerLot
+      }));
+
+      const outBox = document.getElementById('brokerCalcOutput');
+
+      if (type === 'NONE') {
+        outBox.style.display = 'block';
+        lastCalculatedPositionSummary = "Tidak ada posisi aktif (Akun Flat). Modal: $" + (balance || 0);
+        document.getElementById('calcSummaryBanner').innerHTML = `<strong>Status Posisi:</strong> Tidak ada posisi terbuka (Flat). Siap mencari peluang setup Pending Order baru dengan Modal <strong>$${(balance || 0).toFixed(2)}</strong> (Leverage 1:${leverage}).`;
+        showToast('Status Posisi Flat disimpan!');
+        return;
+      }
+
+      if (isNaN(entry) || entry <= 0 || isNaN(lot) || lot <= 0 || isNaN(balance) || balance <= 0) {
+        alert('Mohon isi Harga Entry, Lot, dan Modal/Saldo dengan angka yang valid!');
+        return;
+      }
+
+      // Tentukan Contract Size berdasarkan Pair
+      const isGold = pair === 'XAU/USD';
+      const isJpy = pair.endsWith('/JPY');
+      const contractSize = isGold ? 100 : 100000;
+      const decimals = isGold ? 2 : (isJpy ? 3 : 5);
+
+      // 1. Hitung Selisih Harga & Gross Floating P/L ($)
+      const priceDiff = type === 'BUY' ? (currentPrice - entry) : (entry - currentPrice);
+      let grossPL = 0;
+      if (isGold) {
+        grossPL = priceDiff * contractSize * lot;
+      } else if (isJpy) {
+        grossPL = (priceDiff * contractSize * lot) / currentPrice;
+      } else {
+        grossPL = priceDiff * contractSize * lot;
+      }
+
+      // 2. Hitung Total Biaya Broker & Net P/L ($)
+      const totalFee = lot * commPerLot;
+      const netPL = grossPL - totalFee;
+      const netPct = (netPL / balance) * 100;
+
+      // 3. Hitung Harga Break-Even Point (BEP) termasuk biaya broker
+      let bepShift = 0;
+      if (isGold) {
+        bepShift = commPerLot / contractSize; // misal $7 / 100 oz = $0.07
+      } else if (isJpy) {
+        bepShift = (commPerLot * entry) / contractSize;
+      } else {
+        bepShift = commPerLot / contractSize;
+      }
+      const bepPrice = type === 'BUY' ? (entry + bepShift) : (entry - bepShift);
+
+      // 4. Hitung Used Margin ($), Equity ($), Free Margin ($), Margin Level (%)
+      let usedMargin = 0;
+      if (isGold) {
+        usedMargin = (entry * contractSize * lot) / leverage;
+      } else if (isJpy) {
+        usedMargin = (contractSize * lot) / leverage;
+      } else {
+        usedMargin = (entry * contractSize * lot) / leverage;
+      }
+
+      const equity = balance + netPL;
+      const freeMargin = equity - usedMargin;
+      const marginLevel = usedMargin > 0 ? (equity / usedMargin) * 100 : 0;
+
+      // 5. Hitung Ketahanan Poin & Estimasi Harga Stop Out (Asumsi Stop Out 20% Margin Level)
+      const stopOutEquity = usedMargin * 0.20;
+      const maxLossAllowed = Math.max(0, equity - stopOutEquity);
+      let valuePerPoint = isGold ? (contractSize * lot) : (isJpy ? ((contractSize * lot) / currentPrice) : (contractSize * lot));
+      const endurancePoints = valuePerPoint > 0 ? (maxLossAllowed / valuePerPoint) : 0;
+      const stopOutPrice = type === 'BUY' ? Math.max(0, currentPrice - endurancePoints) : (currentPrice + endurancePoints);
+
+      // Render ke UI
+      outBox.style.display = 'block';
+
+      const grossEl = document.getElementById('resGrossPL');
+      grossEl.innerText = (grossPL >= 0 ? '+$' : '-$') + Math.abs(grossPL).toFixed(2);
+      grossEl.style.color = grossPL >= 0 ? 'var(--success)' : 'var(--danger)';
+      document.getElementById('resPipsDiff').innerText = `${priceDiff >= 0 ? '+' : ''}${priceDiff.toFixed(decimals)} poin`;
+
+      document.getElementById('resBrokerFee').innerText = '-$' + totalFee.toFixed(2);
+
+      const netEl = document.getElementById('resNetPL');
+      netEl.innerText = (netPL >= 0 ? '+$' : '-$') + Math.abs(netPL).toFixed(2);
+      netEl.style.color = netPL >= 0 ? 'var(--success)' : 'var(--danger)';
+      document.getElementById('resNetPct').innerText = `${netPct >= 0 ? '+' : ''}${netPct.toFixed(2)}% dari Modal`;
+
+      document.getElementById('resBepPrice').innerText = bepPrice.toFixed(decimals);
+      document.getElementById('resUsedMargin').innerText = '$' + usedMargin.toFixed(2);
+      document.getElementById('resContractInfo').innerText = `Lev 1:${leverage} (${lot} Lot)`;
+
+      document.getElementById('resEquity').innerText = '$' + equity.toFixed(2);
+      document.getElementById('resFreeMargin').innerText = `Free: $${freeMargin.toFixed(2)}`;
+
+      const mlEl = document.getElementById('resMarginLevel');
+      const msEl = document.getElementById('resMarginStatus');
+      mlEl.innerText = marginLevel.toFixed(1) + '%';
+
+      if (marginLevel >= 500) {
+        mlEl.style.color = 'var(--success)';
+        msEl.innerText = '✅ SANGAT AMAN';
+        msEl.style.color = 'var(--success)';
+      } else if (marginLevel >= 150) {
+        mlEl.style.color = 'var(--accent)';
+        msEl.innerText = '⚠️ WASPADA DRAWDOWN';
+        msEl.style.color = 'var(--accent)';
+      } else {
+        mlEl.style.color = 'var(--danger)';
+        msEl.innerText = '🚨 RAWAN MARGIN CALL';
+        msEl.style.color = 'var(--danger)';
+      }
+
+      document.getElementById('resPointEndurance').innerText = endurancePoints.toFixed(decimals) + ' poin';
+      document.getElementById('resStopOutPrice').innerText = stopOutPrice.toFixed(decimals);
+
+      // Ringkasan untuk Banner & Injeksi Prompt AI
+      lastCalculatedPositionSummary = `Posisi Aktif: ${type} ${lot} Lot ${pair} @ ${entry} | Harga Impas (BEP + Komisi): ${bepPrice.toFixed(decimals)} | Floating Net P/L: ${netPL >= 0 ? '+' : ''}$${netPL.toFixed(2)} (${netPct.toFixed(2)}%) | Modal: $${balance.toFixed(2)} | Equity: $${equity.toFixed(2)} | Used Margin: $${usedMargin.toFixed(2)} (Leverage 1:${leverage}) | Free Margin: $${freeMargin.toFixed(2)} | Margin Level: ${marginLevel.toFixed(1)}% | Estimasi Stop Out: ${stopOutPrice.toFixed(decimals)}`;
+
+      document.getElementById('calcSummaryBanner').innerHTML = `
+        <strong>📌 Ringkasan Tersimpan untuk Prompt AI:</strong><br>
+        ${lastCalculatedPositionSummary}
+      `;
+
+      showToast('Kalkulasi Posisi & Margin selesai!');
+    }
+
+    function resetBrokerCalculator() {
+      document.getElementById('posType').value = 'BUY';
+      document.getElementById('posEntry').value = '';
+      document.getElementById('posLot').value = '0.10';
+      document.getElementById('posBalance').value = '1000';
+      document.getElementById('posLeverage').value = '500';
+      document.getElementById('posCommission').value = '7';
+      document.getElementById('brokerCalcOutput').style.display = 'none';
+      lastCalculatedPositionSummary = "";
+      localStorage.removeItem('broker_calc_inputs');
+      showToast('Kalkulator direset.');
+    }
+
     // Ambil Data Pasar
     async function fetchMarketData() {
       const pair = document.getElementById('pairSelect').value;
@@ -793,6 +1120,7 @@ Contoh:
           if (json.price) {
             currentPrice = parseFloat(json.price);
             document.getElementById('priceDisplay').innerText = currentPrice;
+            document.getElementById('calcCurrentPriceLabel').innerText = currentPrice;
           } else {
             alert('Gagal mengambil data live: ' + (json.message || 'Error API'));
           }
@@ -801,6 +1129,7 @@ Contoh:
         }
       } else {
         document.getElementById('priceDisplay').innerText = currentPrice;
+        document.getElementById('calcCurrentPriceLabel').innerText = currentPrice;
       }
       return currentPrice;
     }
@@ -812,11 +1141,15 @@ Contoh:
       const incM5 = document.getElementById('checkM5').checked;
       const incPos = document.getElementById('checkPosition').checked;
 
-      const pType = document.getElementById('posType').value;
-      const pEntry = document.getElementById('posEntry').value;
+      // Hitung ulang posisi otomatis jika checkbox aktif
       let posText = "Tidak ada posisi aktif (Akun Flat).";
-      if (incPos && pType !== 'NONE' && pEntry) {
-        posText = `Posisi Terbuka: ${pType} @ ${pEntry}`;
+      if (incPos) {
+        const pType = document.getElementById('posType').value;
+        const pEntry = document.getElementById('posEntry').value;
+        if (pType !== 'NONE' && pEntry) {
+          calculateBrokerPosition();
+          posText = lastCalculatedPositionSummary;
+        }
       }
 
       const now = new Date();
@@ -830,7 +1163,7 @@ INSTRUMEN: ${pair}
 HARGA TERAKHIR (CURRENT PRICE): ${price}
 SUMBER DATA: ${mode === 'live' ? 'Twelve Data Live' : 'Simulasi Offline Demo'}
 WAKTU ANALISIS: ${utcString}
-STATUS POSISI SAYA: ${posText}
+STATUS POSISI & KALKULATOR BROKER SAYA: ${posText}
 
 DATA STRUKTUR MULTI-TIMEFRAME:
 - D1: Trend Utama Bullish di atas EMA20/EMA50. Major Support: ${(price * 0.985).toFixed(3)}, Resistance: ${(price * 1.018).toFixed(3)}.
@@ -841,7 +1174,8 @@ DATA STRUKTUR MULTI-TIMEFRAME:
 ATURAN STRATEGI & GAYA BAHASA (PENTING):
 1. PENDING ORDER ONLY: Hanya boleh merekomendasikan "BUY STOP", "SELL STOP", "BUY LIMIT", "SELL LIMIT", atau "NO TRADE / WAIT FIRST".
 2. Minimal Risk/Reward (RR) adalah 1:2 (RR >= 2.0). Jika tidak memenuhi rasio 1:2 atau timeframe berkonflik, WAJIB keluarkan sinyal "NO TRADE / WAIT FIRST" dengan status "WAIT CONFIRMATION".
-3. BAHASA INDONESIA EDUKATIF & MENDALAM:
+3. MANAJEMEN POSISI AKTIF: Evaluasi data Posisi & Margin saya di atas (termasuk titik BEP, Floating Net P/L, dan ketahanan Margin Level). Berikan saran konkret pada field "positionAction".
+4. BAHASA INDONESIA EDUKATIF & MENDALAM:
    - JELASKAN ISTILAH TEKNIKAL: Jika menyebutkan istilah seperti "CHoCH", "BOS", "Retest", "Rejection Wick", "Demand/Supply", WAJIB sertakan artinya secara bahasa awam yang mudah dipahami (contoh: 'CHoCH (Change of Character / sinyal awal pembalikan arah tren)').
    - Jabarkan alasan secara menyeluruh mengapa level entry, SL, dan TP tersebut dipilih berdasarkan dinamika kekuatan pembeli dan penjual di market.
    - Buat penjelasannya runtut, detail, dan nyaman dibaca (minimal 2-3 paragraf penjelasan).
@@ -856,7 +1190,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
   "warningLevel": number atau null,
   "biasReversalLevel": number atau null,
   "status": "VALID SETUP|WAIT CONFIRMATION|INVALID SETUP",
-  "reason": "Penjelasan mendalam, lengkap dengan arti istilah teknikal dalam bahasa Indonesia yang mudah dipahami (CHoCH, BOS, Rejection, dll)",
+  "reason": "Penjelasan mendalam, lengkap dengan arti istilah teknikal dalam bahasa Indonesia yang mudah dipahami (CHoCH, BOS, Rejection, dll) serta evaluasi posisi terbuka saya",
   "glossary": "Glosarium singkat: rangkuman arti 2-3 istilah teknikal yang dipakai pada analisa ini",
   "confirmationCondition": "Syarat validasi candle close dijelaskan secara rinci",
   "cancellationCondition": "Kondisi pembatalan setup order dijelaskan secara rinci",
@@ -905,6 +1239,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
             <div style="color:var(--accent); font-weight:800; font-size: 0.95rem; margin-bottom:6px;">
               STATUS: ${data.status || 'WAIT CONFIRMATION'} (${data.signal})
             </div>
+            ${data.positionAction ? `<div style="margin-bottom:6px;"><strong>💼 Tindakan Posisi Aktif:</strong> <span style="color:var(--primary); font-weight:700;">${data.positionAction}</span></div>` : ''}
             <div style="margin-top:6px; border-top:1px solid #1e293b; padding-top:6px;">
               <strong style="color:var(--accent);">📖 Analisis & Alasan Logis:</strong>
               <p style="margin-top:4px; line-height:1.5;">${data.reason || '-'}</p>
@@ -945,6 +1280,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
           <div style="margin-bottom:6px;">
             <strong>Stop Loss:</strong> ${sl} | <strong>Take Profit:</strong> ${tp} <br>
             <strong>Kepatuhan Rasio RR:</strong> ${rrBadge}
+            ${data.positionAction ? `<br><strong>💼 Tindakan Posisi Aktif:</strong> <span style="color:var(--accent); font-weight:700;">${data.positionAction}</span>` : ''}
           </div>
           <div style="margin-top:8px; border-top:1px solid #1e293b; padding-top:8px;">
             <strong style="color:var(--accent);">📖 Analisis & Alasan Logis:</strong>
@@ -976,10 +1312,8 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       const chartEl = document.getElementById('aiLevelChart');
       chartBox.style.display = 'block';
 
-      // Reset kontainer chart lama
       chartEl.innerHTML = '';
 
-      // Inisialisasi TradingView Lightweight Charts
       chartInstance = LightweightCharts.createChart(chartEl, {
         width: chartEl.clientWidth,
         height: 280,
@@ -1013,15 +1347,14 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         wickDownColor: '#ef4444',
       });
 
-      // Ambil harga saat ini dan buat rentang candle terkini
       const pair = data.instrument || document.getElementById('pairSelect').value;
       document.getElementById('chartPairBadge').innerText = pair;
-      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 2740;
+      const currentPrice = parseFloat(document.getElementById('priceDisplay').innerText) || SIMULATION_PRICES[pair] || 4065.99;
       
       const candles = generateSimulatedCandles(currentPrice);
       candleSeriesInstance.setData(candles);
 
-      // 1. Gambar Garis ENTRY (Biru Solid)
+      // 1. Garis ENTRY (Biru Solid)
       if (data.entry) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.entry),
@@ -1033,7 +1366,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 2. Gambar Garis TAKE PROFIT (Hijau Putus-putus)
+      // 2. Garis TAKE PROFIT (Hijau Putus-putus)
       if (data.tp) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.tp),
@@ -1045,7 +1378,7 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 3. Gambar Garis STOP LOSS (Merah Putus-putus)
+      // 3. Garis STOP LOSS (Merah Putus-putus)
       if (data.sl) {
         candleSeriesInstance.createPriceLine({
           price: parseFloat(data.sl),
@@ -1057,9 +1390,8 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
         });
       }
 
-      // 4. Deteksi & Gambar Level Warning / Level Referensi S-R (Kuning/Oranye Titik-titik)
+      // 4. Garis Warning / Referensi S-R (Kuning Titik-titik)
       let refLevel = data.warningLevel || data.biasReversalLevel;
-      
       if (!refLevel && (data.reason || data.confirmationCondition)) {
         const fullText = (data.reason || '') + ' ' + (data.confirmationCondition || '');
         const match = fullText.match(/(\d{3,5}\.\d{2,4}|\d{1,2}\.\d{4,5})/);
@@ -1085,11 +1417,10 @@ FORMAT OUTPUT JSON (Hanya berikan JSON murni tanpa pembuka/penutup markdown):
       chartInstance.timeScale().fitContent();
     }
 
-    // Generator lilin candle realistis (15 menit terakhir)
     function generateSimulatedCandles(basePrice) {
       const candles = [];
       const nowSec = Math.floor(Date.now() / 1000);
-      let t = nowSec - (30 * 900); // 30 candle x 15 menit
+      let t = nowSec - (30 * 900);
       let p = basePrice * 0.995;
       const volatility = basePrice > 1000 ? 2.5 : (basePrice > 50 ? 0.25 : 0.0015);
 
