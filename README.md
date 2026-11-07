@@ -21,19 +21,39 @@ Aplikasi web mobile ultra-ringan untuk analisis teknikal pasar Forex dan Gold (X
 - **Mobile-First & Private:** Dioptimalkan untuk layar smartphone Android/iOS. API Key disimpan secara lokal di `localStorage` perangkat dan tidak dikirim ke server pihak ketiga mana pun.
 
 ---
-
 ## 🚀 Alur Kerja (Workflow)
+
+Berikut adalah tahapan penggunaan aplikasi:
 
 ```mermaid
 graph LR
     A[Pilih Pair] --> B[Ambil Data Pasar]
     B --> C[Salin Prompt Otomatis]
-    C --> D[Tempel ke ChatGPT / Claude]
+    C --> D[Tempel ke ChatGPT / Claude / Gemini]
     D --> E[Tempel Balasan JSON ke Web]
     E --> F[Validasi Setup & Kalkulasi RR]
+```
 
-Pilih Instrumen: Pilih pair yang diinginkan (misal XAU/USD atau EUR/USD).Ambil Data: Klik tombol Ambil Data untuk menarik harga terkini (via Twelve Data atau Mode Simulasi).Salin Prompt: Klik tombol 📋 SALIN KE CLIPBOARD.Jalankan di AI: Buka web ChatGPT, Claude, atau Gemini, lalu tekan Paste (Ctrl + V).Validasi Setup: Salin kembali hasil format JSON dari AI ke kolom Validasi Balasan AI untuk memastikan rasio Risk/Reward $\ge 1:2$ sebelum mengeksekusi order.🛠️ Format Standar JSON Balasan AIAI akan mengembalikan respon terstruktur murni dalam format JSON berbahasa Indonesia:
+### 📌 Langkah Penggunaan
 
+1. **Pilih Instrumen:** Pilih pair yang ingin dianalisis, misalnya `XAU/USD` atau `EUR/USD`.
+2. **Ambil Data:** Klik tombol **Ambil Data** untuk mengambil harga terkini melalui Twelve Data atau menggunakan Mode Simulasi.
+3. **Salin Prompt:** Klik tombol **📋 SALIN KE CLIPBOARD** untuk menyalin prompt analisis secara otomatis.
+4. **Jalankan di AI:** Buka ChatGPT, Claude, atau Gemini, kemudian tempel prompt menggunakan `Ctrl + V`.
+5. **Validasi Setup:** Salin hasil analisis AI dalam format JSON, kemudian tempel ke kolom **Validasi Balasan AI** pada aplikasi.
+6. **Kalkulasi RR:** Sistem akan memvalidasi setup dan menghitung rasio Risk/Reward secara otomatis.
+
+**Catatan:** Setup dinyatakan valid apabila memenuhi rasio Risk/Reward minimal 1:2.
+
+---
+
+## 🛠️ Format Standar JSON Balasan AI
+
+AI akan menghasilkan respons dalam format JSON terstruktur dengan penjelasan berbahasa Indonesia.
+
+### Contoh Respons
+
+```json
 {
   "instrument": "XAU/USD",
   "signal": "BUY STOP",
@@ -47,7 +67,25 @@ Pilih Instrumen: Pilih pair yang diinginkan (misal XAU/USD atau EUR/USD).Ambil D
   "confirmationCondition": "Candle M15 close di atas level 2745.50 dengan momentum bersih.",
   "cancellationCondition": "Harga drop dan close kembali di bawah 2738.00 sebelum entry terpicu."
 }
+```
 
+### 📖 Keterangan Field JSON
+
+| Field | Keterangan |
+|---|---|
+| `instrument` | Instrumen trading yang dianalisis. |
+| `signal` | Jenis sinyal trading, seperti BUY STOP, SELL STOP, BUY LIMIT, SELL LIMIT, atau WAIT. |
+| `entry` | Harga rencana masuk posisi. |
+| `sl` | Harga Stop Loss. |
+| `tp` | Harga Take Profit. |
+| `warningLevel` | Level harga untuk peringatan risiko. |
+| `biasReversalLevel` | Level harga yang mengindikasikan perubahan arah bias. |
+| `status` | Status validitas setup trading. |
+| `reason` | Alasan teknikal di balik keputusan AI. |
+| `confirmationCondition` | Kondisi yang harus terpenuhi sebelum entry. |
+| `cancellationCondition` | Kondisi yang membatalkan setup trading. |
+
+**Penting:** Respons AI harus mengikuti struktur JSON tersebut agar dapat dibaca dan divalidasi oleh sistem. Jangan menambahkan teks, komentar, atau Markdown di luar objek JSON saat mengirimkan hasil analisis ke aplikasi.
 ⚙️ Pemasangan & Penggunaan Mandiri
 Repositori ini murni menggunakan HTML5, CSS3 murni, dan Vanilla JavaScript tanpa dependencies pihak ketiga (Node.js/npm tidak diperlukan):
 
