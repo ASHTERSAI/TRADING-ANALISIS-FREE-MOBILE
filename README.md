@@ -19,7 +19,7 @@ Aplikasi web mobile ultra-ringan untuk analisis teknikal pasar Forex dan Gold (X
   - Data posisi dan manajemen risiko langsung diintegrasikan ke dalam teks prompt AI.
 - **📋 Tombol Quick Paste & Clear:** Tombol instan di kotak validator untuk menempelkan (*paste*) teks JSON dari clipboard dan membersihkan layar (*clear*) dengan satu kali klik.
 - **💡 Penjelasan Edukatif & Glosarium AI:** Prompt dikunci agar AI tidak hanya memberikan angka, tetapi juga menjabarkan istilah teknikal (*CHoCH, BOS, Rejection Wick, Retrace*) ke dalam Bahasa Indonesia yang mudah dipahami disertai kamus istilah.
-- **Zero AI Token Cost & Mobile-First:** Pemrosesan data dilakukan di sisi klien. API Key Twelve Data ((https://twelvedata.com/account/api-keys)) dan konfigurasi tersimpan aman di penyimpanan lokal perangkat Anda.
+- **Zero AI Token Cost & Mobile-First:** Pemrosesan data dilakukan di sisi klien. API Key TwelveData GRATIS NO BAYAR-BAYAR (https://twelvedata.com/account/api-keys) dan konfigurasi tersimpan aman di penyimpanan lokal perangkat Anda.
 
 ---
 
