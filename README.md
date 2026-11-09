@@ -45,3 +45,5 @@ graph LR
     C --> D[Buka Web AI & Tempel Prompt]
     D --> E[Salin JSON Balasan AI]
     E --> F[Paste ke Web & Validasi Chart]
+
+<img width="480" height="220" alt="Image" src="https://github.com/user-attachments/assets/8dd4b929-9d4a-42a8-9f82-7da6fabf884c" />
