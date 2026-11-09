@@ -1,3 +1,5 @@
+<img width="1344" height="617" alt="Animation (1)" src="https://github.com/user-attachments/assets/93b67f30-e867-4bef-9e39-8789e9f9b1a2" />
+
 # 📈 TRADING-ANALISIS-FREE-MOBILE
 > **Mobile Quant Technical Analyzer, MTF Charts & AI Prompt Generator (Zero AI Token Edition)**
 
